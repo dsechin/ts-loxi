@@ -1,0 +1,31 @@
+{
+  "name": "y",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "run:watch": "ts-node-dev --respawn --transpile-only --",
+    "lint": "eslint --cache --ext .ts .",
+    "lint:fix": "eslint --cache --ext .ts . --fix",
+    "prebuild": "npm run lint",
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "dsechin",
+  "license": "WTFPL",
+  "devDependencies": {
+    "@types/node": "^16.4.13",
+    "@typescript-eslint/eslint-plugin": "^4.29.0",
+    "@typescript-eslint/eslint-plugin-tslint": "^4.29.0",
+    "@typescript-eslint/parser": "^4.29.0",
+    "eslint": "^7.32.0",
+    "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-jsdoc": "^36.0.6",
+    "eslint-plugin-prefer-arrow": "^1.2.3",
+    "prettier": "2.3.2",
+    "ts-node": "^10.1.0",
+    "ts-node-dev": "^1.1.8",
+    "tslib": "^2.3.0",
+    "typescript": "^4.3.5"
+  }
+}
