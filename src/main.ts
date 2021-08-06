@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as readline from 'readline';
 import yargs from 'yargs/yargs';
 import * as _ from 'lodash';
+import {run} from './scanner';
 
 const argv = yargs(process.argv.slice(2))
   .usage('$0 [script]')
@@ -11,13 +12,13 @@ const argv = yargs(process.argv.slice(2))
   })
   .argv;
 
-console.log(argv);
-
 const runFile = (path: string) => {
   if (!fs.existsSync(path) || !fs.statSync(path).isFile) {
     console.log(`Passed script "${path}" does not exist or is not a file`);
     process.exit(-1);
   }
+
+  run(fs.readFileSync(path, {encoding: 'utf-8'}));
 };
 
 const runPrompt = () => {
@@ -27,11 +28,12 @@ const runPrompt = () => {
   });
 
   const readSingleLine = () => {
-    rl.question('> ', (answer) => {
-      if (answer === 'exit') {
+    rl.question('> ', (line) => {
+      if (line === 'exit') {
         return rl.close();
       }
 
+      run(line);
       readSingleLine();
     });
   };
