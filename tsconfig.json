@@ -19,7 +19,7 @@
   "compilerOptions": {
     "target": "es2017",
     "module": "commonjs",
-    "strictNullChecks": true,
+    "strict": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "moduleResolution": "node",

@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "run:watch": "ts-node-dev --respawn --transpile-only --",
+    "run": "ts-node-dev --transpile-only --",
     "lint": "eslint --cache --ext .ts .",
     "lint:fix": "eslint --cache --ext .ts . --fix",
     "prebuild": "npm run lint",
@@ -14,7 +15,9 @@
   "author": "dsechin",
   "license": "WTFPL",
   "devDependencies": {
+    "@types/lodash": "^4.14.172",
     "@types/node": "^16.4.13",
+    "@types/yargs": "^17.0.2",
     "@typescript-eslint/eslint-plugin": "^4.29.0",
     "@typescript-eslint/eslint-plugin-tslint": "^4.29.0",
     "@typescript-eslint/parser": "^4.29.0",
@@ -27,5 +30,9 @@
     "ts-node-dev": "^1.1.8",
     "tslib": "^2.3.0",
     "typescript": "^4.3.5"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "yargs": "^17.1.0"
   }
 }
