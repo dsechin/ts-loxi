@@ -5,7 +5,7 @@ const splitByAndTrim = (s: string, sep: string) => {
 };
 
 const getVisitMethodName = (className: string): string => {
-  return `visit${className}`;
+  return `visit${className}Expr`;
 };
 
 const getExprDecl = (): string => {

@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "prerun": "ts-node --transpile-only src/ast-generate.ts",
+    "run": "ts-node-dev --transpile-only --",
     "prerun:watch": "ts-node --transpile-only src/ast-generate.ts",
     "run:watch": "ts-node-dev --respawn --transpile-only --",
-    "run": "ts-node-dev --transpile-only --",
     "lint": "eslint --cache --ext .ts .",
     "lint:fix": "eslint --cache --ext .ts . --fix",
     "prebuild": "npm run lint",

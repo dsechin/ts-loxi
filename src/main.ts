@@ -3,7 +3,9 @@ import * as fs from 'fs';
 import * as readline from 'readline';
 import yargs from 'yargs/yargs';
 import * as _ from 'lodash';
-import {run} from './scanner';
+import {Scanner} from './scanner';
+import {Parser} from './parser';
+import {AstPrinter} from './ast-printer';
 
 const argv = yargs(process.argv.slice(2))
   .usage('$0 [script]')
@@ -11,6 +13,22 @@ const argv = yargs(process.argv.slice(2))
     script: {type: 'string', demandOption: false},
   })
   .argv;
+
+const run = (source: string): void => {
+  const scanner = new Scanner(source);
+  const tokens = scanner.scanTokens();
+
+  const parser = new Parser(tokens);
+
+  const expression = parser.parse();
+
+  // Stop if there was a syntax error.
+  if (!expression) {
+    return;
+  }
+
+  console.log(new AstPrinter().print(expression));
+};
 
 const runFile = (path: string) => {
   if (!fs.existsSync(path) || !fs.statSync(path).isFile) {

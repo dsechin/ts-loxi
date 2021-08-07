@@ -1,5 +1,5 @@
 import {Token, TokenType} from './token';
-import {error} from './utils';
+import {reportScannerError} from './error';
 
 export class Scanner {
   private tokens: Token[] = [];
@@ -107,7 +107,7 @@ export class Scanner {
     }
 
     if (this.isAtEnd()) {
-      error(this.line, 'Unterminated string');
+      reportScannerError(this.line, 'Unterminated string');
 
       return;
     }
@@ -256,7 +256,7 @@ export class Scanner {
         } else if (this.isAlpha(char)) {
           this.matchIdentifier();
         } else {
-          error(this.line, 'Unexpected character');
+          reportScannerError(this.line, 'Unexpected character');
         }
 
         break;
@@ -276,14 +276,3 @@ export class Scanner {
     return this.tokens;
   }
 }
-
-export const run = (source: string): void => {
-  const scanner = new Scanner(source);
-  const tokens = scanner.scanTokens();
-
-  console.log({tokens});
-
-  tokens.forEach((token) => {
-    console.log(token);
-  });
-};
