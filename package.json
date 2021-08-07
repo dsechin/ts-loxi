@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "prerun": "ts-node --transpile-only src/ast-generate.ts",
+    "prerun:watch": "ts-node --transpile-only src/ast-generate.ts",
     "run:watch": "ts-node-dev --respawn --transpile-only --",
     "run": "ts-node-dev --transpile-only --",
     "lint": "eslint --cache --ext .ts .",
