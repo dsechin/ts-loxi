@@ -38,10 +38,14 @@ export class Scanner {
     return char >= '0' && char <= '9';
   }
 
+  private isNewLine(char: string): boolean {
+    return char === '\n';
+  }
+
   private isAlpha(char: string): boolean {
     return (char >= 'a' && char <= 'z')
       || (char >= 'A' && char <= 'Z')
-      || char === 'char';
+      || char === '_';
   }
 
   private combineOr(
@@ -87,9 +91,15 @@ export class Scanner {
     return true;
   }
 
+  private consumeWhile(predicate: (char: string) => boolean): void {
+    while (predicate(this.peek()) && !this.isAtEnd()) {
+      this.advance();
+    }
+  }
+
   private matchString(): void {
     while (this.peek() !== '"' && !this.isAtEnd()) {
-      if (this.peek() === '\n') {
+      if (this.isNewLine(this.peek())) {
         this.line++;
       }
 
@@ -110,18 +120,14 @@ export class Scanner {
   }
 
   private matchNumber(): void {
-    while (this.isDigit(this.peek())) {
-      this.advance();
-    }
+    this.consumeWhile(char => this.isDigit(char));
 
     // Look for a fractional part.
     if (this.peek() === '.' && this.isDigit(this.peekNext())) {
       // Consume the "."
       this.advance();
-
-      while (this.isDigit(this.peek())) {
-        this.advance();
-      }
+      // Consume the fractional part
+      this.consumeWhile(char => this.isDigit(char));
     }
 
     this.addToken(
@@ -136,9 +142,7 @@ export class Scanner {
       (char) => this.isAlpha(char),
     );
 
-    while (predicate(this.peek())) {
-      this.advance();
-    }
+    this.consumeWhile(predicate);
 
     const text = this.source.slice(this.start, this.current);
     const type = this.keywords[text] || TokenType.IDENTIFIER;
@@ -217,9 +221,15 @@ export class Scanner {
       case '/':
         if (this.match('/')) {
           // A comment goes until the end of the line.
-          while (this.peek() !== '\n' && !this.isAtEnd()) {
+          this.consumeWhile(_char => !this.isNewLine(_char));
+        } else if (this.match('*')) {
+          // Multiline comment
+          while (this.peek() !== '*' && this.peekNext() !== '/' && !this.isAtEnd()) {
             this.advance();
           }
+
+          this.advance();
+          this.advance();
         } else {
           this.addTokenByType(TokenType.SLASH);
         }
