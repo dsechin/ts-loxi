@@ -193,7 +193,9 @@ export class Scanner {
         this.addTokenByType(TokenType.SEMICOLON);
         break;
       case '*':
-        this.addTokenByType(TokenType.STAR);
+        this.addTokenByType(
+          this.match('*') ? TokenType.STAR_STAR : TokenType.STAR,
+        );
         break;
 
       // Comparison operators & negation

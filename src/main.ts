@@ -19,7 +19,6 @@ const run = (source: string): void => {
   const tokens = scanner.scanTokens();
 
   const parser = new Parser(tokens);
-
   const expression = parser.parse();
 
   // Stop if there was a syntax error.

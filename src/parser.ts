@@ -148,17 +148,36 @@ export class Parser {
 
   /**
    * unary → ( "!" | "-" ) unary
-   *         | primary ;
+   *         | exponentiation ;
    */
   private unary(): Expr {
     if (this.match(TokenType.BANG, TokenType.MINUS)) {
       const operator = this.previous();
-      const right = this.primary();
+      const right = this.exponentiation();
 
       return new UnaryExpr(operator, right);
     }
 
-    return this.primary();
+    return this.exponentiation();
+  }
+
+  /**
+   * exponentiation → primary ( ** primary )*
+   */
+  private exponentiation(): Expr {
+    let primary: Expr = this.primary();
+
+    while (this.match(TokenType.STAR_STAR)) {
+      const operator = this.previous();
+
+      primary = new BinaryExpr(
+        primary,
+        operator,
+        this.exponentiation(),
+      );
+    }
+
+    return primary;
   }
 
   /**

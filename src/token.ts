@@ -21,6 +21,7 @@ export enum TokenType {
   GREATER_EQUAL = 'GREATER_EQUAL',
   LESS = 'LESS',
   LESS_EQUAL = 'LESS_EQUAL',
+  STAR_STAR = 'STAR_STAR', // exponentiation (e.g. 2 ** 3 --> 8)
 
   // Literals.
   IDENTIFIER = 'IDENTIFIER',
