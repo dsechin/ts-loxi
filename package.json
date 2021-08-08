@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "prerun": "ts-node --transpile-only src/ast-generate.ts",
+    "generate-ast-classes": "ts-node --transpile-only tools/generate-ast-classes.ts",
+    "prerun": "npm run generate-ast-classes",
     "run": "ts-node-dev --transpile-only --",
-    "prerun:watch": "ts-node --transpile-only src/ast-generate.ts",
+    "prerun:watch": "npm run generate-ast-classes",
     "run:watch": "ts-node-dev --respawn --transpile-only --",
     "lint": "eslint --cache --ext .ts .",
     "lint:fix": "eslint --cache --ext .ts . --fix",
