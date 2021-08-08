@@ -6,6 +6,8 @@ import * as _ from 'lodash';
 import {Scanner} from './scanner';
 import {Parser} from './parser';
 import {AstPrinter} from './ast-printer';
+import {Interpreter} from './interpreter';
+import {RuntimeError} from './error';
 
 const argv = yargs(process.argv.slice(2))
   .usage('$0 [script]')
@@ -27,6 +29,10 @@ const run = (source: string): void => {
   }
 
   console.log(new AstPrinter().print(expression));
+
+  const interpreter = new Interpreter();
+
+  interpreter.interpret(expression);
 };
 
 const runFile = (path: string) => {

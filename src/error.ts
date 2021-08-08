@@ -8,6 +8,14 @@ export class ParseError extends Error {
     super(message);
   }
 }
+export class RuntimeError extends Error {
+  constructor(
+    public token: Token,
+    public message: string,
+  ) {
+    super(message);
+  }
+}
 
 export const reportScannerError = (line: number, message: string): void => {
   report(line, '', message);
@@ -21,6 +29,12 @@ export const reportParserError = (token: Token, message: string) => {
   }
 };
 
+export const reportRuntimeError = (error: RuntimeError) => {
+  const {token} = error;
+
+  report(token.line, ` at '${token.lexeme}'`, error.message);
+};
+
 export const report = (
   line: number,
   where: string,
@@ -28,5 +42,5 @@ export const report = (
 ): void => {
   const errMsg = `[line ${line}] Error ${where}: ${message}`;
 
-  process.stderr.write(errMsg);
+  console.log(errMsg);
 };
