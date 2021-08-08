@@ -1,8 +1,8 @@
 import _ from 'lodash';
-import {BinaryExpr, Expr, GroupingExpr, LiteralExpr, NoOpExpr, Visitor} from './ast';
+import * as AST from './ast';
 
-export class AstPrinter implements Visitor<string> {
-  private parenthesize(name: string, ...exprs: Expr[]): string {
+export class AstPrinter implements AST.Visitor<string> {
+  private parenthesize(name: string, ...exprs: AST.Expr[]): string {
     const exprStrings = exprs
       .map(expr => {
         return ` ${expr.accept(this)}`;
@@ -11,11 +11,11 @@ export class AstPrinter implements Visitor<string> {
     return `(${name} ${exprStrings})`;
   }
 
-  public print(expr: Expr): string {
+  public print(expr: AST.Expr): string {
     return expr.accept(this);
   }
 
-  public visitBinaryExpr(expr: BinaryExpr) {
+  public visitBinaryExpr(expr: AST.BinaryExpr) {
     return this.parenthesize(
       expr.operator.lexeme,
       expr.left,
@@ -23,14 +23,14 @@ export class AstPrinter implements Visitor<string> {
     );
   }
 
-  public visitUnaryExpr(expr: BinaryExpr) {
+  public visitUnaryExpr(expr: AST.BinaryExpr) {
     return this.parenthesize(
       expr.operator.lexeme,
       expr.right,
     );
   }
 
-  public visitLiteralExpr(expr: LiteralExpr) {
+  public visitLiteralExpr(expr: AST.LiteralExpr) {
     if (_.isNull(expr.value)) {
       return 'nil';
     }
@@ -38,11 +38,11 @@ export class AstPrinter implements Visitor<string> {
     return String(expr.value);
   }
 
-  public visitNoOpExpr(expr: NoOpExpr) {
+  public visitNoOpExpr(expr: AST.NoOpExpr) {
     return '';
   }
 
-  public visitGroupingExpr(expr: GroupingExpr) {
+  public visitGroupingExpr(expr: AST.GroupingExpr) {
     return this.parenthesize('group', expr.expression);
   }
 }
