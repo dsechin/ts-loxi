@@ -1,4 +1,7 @@
-expression     → equality ;
+expression     → conditional ;
+conditional    → equality "?" equality ":" equality
+               | equality ;
+
 equality       → comparison ( ( "!=" | "==" ) comparison )* ;
 comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 term           → factor ( ( "-" | "+" ) factor )* ;
@@ -14,6 +17,7 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
 
 Name 	            Operators 	  Associates
 ==========================================
+Conditional       ?:            Right
 Equality 	        == !=   	    Left
 Comparison 	      > >= < <= 	  Left
 Term 	            - + 	        Left

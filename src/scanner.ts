@@ -189,6 +189,12 @@ export class Scanner {
       case '+':
         this.addTokenByType(TokenType.PLUS);
         break;
+      case '?':
+        this.addTokenByType(TokenType.QUESTION_MARK);
+        break;
+      case ':':
+        this.addTokenByType(TokenType.COLON);
+        break;
       case ';':
         this.addTokenByType(TokenType.SEMICOLON);
         break;

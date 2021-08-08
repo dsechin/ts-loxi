@@ -5,11 +5,26 @@ export abstract class Expr {
 }
 
 export interface Visitor<T> {
+  visitTernaryExpr(expr: TernaryExpr): T;
   visitBinaryExpr(expr: BinaryExpr): T;
   visitGroupingExpr(expr: GroupingExpr): T;
   visitLiteralExpr(expr: LiteralExpr): T;
   visitUnaryExpr(expr: UnaryExpr): T;
   visitNoOpExpr(expr: NoOpExpr): T;
+}
+
+export class TernaryExpr extends Expr {
+  constructor(
+    public condition: Expr,
+    public truthly: Expr,
+    public falsey: Expr,
+  ) {
+    super();
+  }
+
+  accept<T>(visitor: Visitor<T>): T {
+    return visitor.visitTernaryExpr(this);
+  }
 }
 
 export class BinaryExpr extends Expr {

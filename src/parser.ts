@@ -1,4 +1,4 @@
-import {BinaryExpr, Expr, GroupingExpr, LiteralExpr, NoOpExpr, UnaryExpr} from './ast';
+import * as AST from './ast';
 import {Token, TokenType} from './token';
 import {ParseError, reportParserError} from './error';
 
@@ -69,23 +69,50 @@ export class Parser {
   /** GRAMMAR RULES **/
 
   /**
-   * expression → equality
+   * expression → conditional
    */
-  private expression(): Expr {
-    return this.equality();
+  private expression(): AST.Expr {
+    return this.conditional();
+  }
+
+  /**
+   * conditional → equality "?" equality ":" equality
+   *             | equality ;
+   */
+  private conditional(): AST.Expr {
+    const condition: AST.Expr = this.equality();
+
+    if (this.match(TokenType.QUESTION_MARK)) {
+      const truthly = this.equality();
+
+      if (!this.match(TokenType.COLON)) {
+        throw this.error(
+          this.peek(),
+          'Expect colon & another expression.',
+        );
+      }
+
+      return new AST.TernaryExpr(
+        condition,
+        new AST.GroupingExpr(truthly), // ignore precedence
+        this.conditional(), // right assoc.
+      );
+    }
+
+    return condition;
   }
 
   /**
    * equality → comparison ( ( "!=" | "==" ) comparison )* ;
    */
-  private equality(): Expr {
-    let expr: Expr = this.comparison();
+  private equality(): AST.Expr {
+    let expr: AST.Expr = this.comparison();
 
-    while (this.match(TokenType.BANG_EQUAL, TokenType.EQUAL)) {
+    while (this.match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL)) {
       const operator = this.previous();
       const right = this.comparison();
 
-      expr = new BinaryExpr(expr, operator, right);
+      expr = new AST.BinaryExpr(expr, operator, right);
     }
 
     return expr;
@@ -94,8 +121,8 @@ export class Parser {
   /**
    * comparison → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
    */
-  private comparison(): Expr {
-    let term: Expr = this.term();
+  private comparison(): AST.Expr {
+    let term: AST.Expr = this.term();
 
     const comparisonOps = [
       TokenType.GREATER,
@@ -108,7 +135,7 @@ export class Parser {
       const operator = this.previous();
       const right = this.term();
 
-      term = new BinaryExpr(term, operator, right);
+      term = new AST.BinaryExpr(term, operator, right);
     }
 
     return term;
@@ -117,14 +144,14 @@ export class Parser {
   /**
    * term → factor ( ( "-" | "+" ) factor )* ;
    */
-  private term(): Expr {
-    let factor: Expr = this.factor();
+  private term(): AST.Expr {
+    let factor: AST.Expr = this.factor();
 
     while (this.match(TokenType.PLUS, TokenType.MINUS)) {
       const operator = this.previous();
       const right = this.factor();
 
-      factor = new BinaryExpr(factor, operator, right);
+      factor = new AST.BinaryExpr(factor, operator, right);
     }
 
     return factor;
@@ -133,14 +160,14 @@ export class Parser {
   /**
    * factor → unary ( ( "/" | "*" ) unary )* ;
    */
-  private factor(): Expr {
-    let unary: Expr = this.unary();
+  private factor(): AST.Expr {
+    let unary: AST.Expr = this.unary();
 
     while (this.match(TokenType.SLASH, TokenType.STAR)) {
       const operator = this.previous();
       const right = this.unary();
 
-      unary = new BinaryExpr(unary, operator, right);
+      unary = new AST.BinaryExpr(unary, operator, right);
     }
 
     return unary;
@@ -150,12 +177,12 @@ export class Parser {
    * unary → ( "!" | "-" ) unary
    *         | exponentiation ;
    */
-  private unary(): Expr {
+  private unary(): AST.Expr {
     if (this.match(TokenType.BANG, TokenType.MINUS)) {
       const operator = this.previous();
       const right = this.exponentiation();
 
-      return new UnaryExpr(operator, right);
+      return new AST.UnaryExpr(operator, right);
     }
 
     return this.exponentiation();
@@ -164,13 +191,13 @@ export class Parser {
   /**
    * exponentiation → primary ( ** primary )*
    */
-  private exponentiation(): Expr {
-    let primary: Expr = this.primary();
+  private exponentiation(): AST.Expr {
+    let primary: AST.Expr = this.primary();
 
     while (this.match(TokenType.STAR_STAR)) {
       const operator = this.previous();
 
-      primary = new BinaryExpr(
+      primary = new AST.BinaryExpr(
         primary,
         operator,
         this.exponentiation(),
@@ -184,21 +211,21 @@ export class Parser {
    * primary → NUMBER | STRING | "true" | "false" | "nil"
    *         | "(" expression ")" ;
    */
-  private primary(): Expr {
+  private primary(): AST.Expr {
     if (this.match(TokenType.TRUE)) {
-      return new LiteralExpr(true);
+      return new AST.LiteralExpr(true);
     }
 
     if (this.match(TokenType.FALSE)) {
-      return new LiteralExpr(false);
+      return new AST.LiteralExpr(false);
     }
 
     if (this.match(TokenType.NIL)) {
-      return new LiteralExpr(null);
+      return new AST.LiteralExpr(null);
     }
 
     if (this.match(TokenType.NUMBER, TokenType.STRING)) {
-      return new LiteralExpr(this.previous().literal);
+      return new AST.LiteralExpr(this.previous().literal);
     }
 
     if (this.match(TokenType.LEFT_PAREN)) {
@@ -206,13 +233,13 @@ export class Parser {
 
       this.consume(TokenType.RIGHT_PAREN, 'Expect \')\' after expression.');
 
-      return new GroupingExpr(expr);
+      return new AST.GroupingExpr(expr);
     }
 
     throw this.error(this.peek(), 'Expect expression.');
 
     // Unreachable
-    return new NoOpExpr();
+    return new AST.NoOpExpr();
   }
 
   private synchronize(): void {
@@ -239,7 +266,7 @@ export class Parser {
     }
   }
 
-  public parse(): Expr | null {
+  public parse(): AST.Expr | null {
     try {
       return this.expression();
     } catch (error) {

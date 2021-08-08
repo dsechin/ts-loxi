@@ -23,6 +23,16 @@ export class AstPrinter implements AST.Visitor<string> {
     );
   }
 
+  public visitTernaryExpr(expr: AST.TernaryExpr) {
+    const chunks: string[] = [
+      expr.condition.accept(this),
+      `? ${expr.truthly.accept(this)}`,
+      `: ${expr.falsey.accept(this)}`,
+    ];
+
+    return `( ${chunks.join(' ')} )`;
+  }
+
   public visitUnaryExpr(expr: AST.BinaryExpr) {
     return this.parenthesize(
       expr.operator.lexeme,
