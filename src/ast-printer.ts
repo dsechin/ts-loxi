@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import * as AST from './ast';
 
-export class AstPrinter implements AST.Visitor<string> {
+export class AstPrinter implements AST.ExprVisitor<string> {
   private parenthesize(name: string, ...exprs: AST.Expr[]): string {
     const exprStrings = exprs
       .map(expr => {

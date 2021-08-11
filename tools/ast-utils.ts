@@ -11,10 +11,12 @@ const getVisitMethodName = (
   return `visit${className}${baseClass}`;
 };
 
+const getVisitorClassName = (baseClass: string) => `${baseClass}Visitor`;
+
 const getBaseClassDecl = (baseClass: string): string => {
   const exprDecl = `
 export abstract class ${baseClass} {
-  abstract accept<T>(visitor: Visitor<T>): T;
+  abstract accept<T>(visitor: ${getVisitorClassName(baseClass)}<T>): T;
 }`;
 
   return exprDecl.trim();
@@ -33,7 +35,7 @@ const getVisitorDecl = (
     });
 
   const visitorDecl = `
-export interface Visitor<T> {
+export interface ${getVisitorClassName(baseClass)}<T> {
   ${visitMethods.join('\n' + INDENT)}
 }`;
 
@@ -59,7 +61,7 @@ export class ${className}${baseClass} extends ${baseClass} {
     super();
   }
 
-  accept<T>(visitor: Visitor<T>): T {
+  accept<T>(visitor: ${getVisitorClassName(baseClass)}<T>): T {
     return visitor.${getVisitMethodName(className, baseClass)}(this);
   }
 }`;

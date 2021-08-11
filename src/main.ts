@@ -21,18 +21,16 @@ const run = (source: string): void => {
   const tokens = scanner.scanTokens();
 
   const parser = new Parser(tokens);
-  const expression = parser.parse();
+  const statements = parser.parse();
 
   // Stop if there was a syntax error.
-  if (!expression) {
+  if (statements.length === 0) {
     return;
   }
 
-  console.log(new AstPrinter().print(expression));
-
   const interpreter = new Interpreter();
 
-  interpreter.interpret(expression);
+  interpreter.interpret(statements);
 };
 
 const runFile = (path: string) => {

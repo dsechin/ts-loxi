@@ -69,6 +69,40 @@ export class Parser {
   /** GRAMMAR RULES **/
 
   /**
+   * statement → exprStmt
+   *           | printStmt ;
+   */
+  private statement(): AST.Stmt {
+    if (this.match(TokenType.PRINT)) {
+      return this.printStatement();
+    }
+
+    return this.expressionStatment();
+  }
+
+  /**
+   * printStmt → "print" expression ";" ;
+   */
+  private printStatement(): AST.PrintStmt {
+    const value = this.expression();
+
+    this.consume(TokenType.SEMICOLON, 'Expect ";" after value');
+
+    return new AST.PrintStmt(value);
+  }
+
+  /**
+   * exprStmt → expression ";" ;
+   */
+  private expressionStatment(): AST.ExpressionStmt {
+    const value = this.expression();
+
+    this.consume(TokenType.SEMICOLON, 'Expect ";" after expression');
+
+    return new AST.ExpressionStmt(value);
+  }
+
+  /**
    * expression → conditional
    */
   private expression(): AST.Expr {
@@ -266,11 +300,19 @@ export class Parser {
     }
   }
 
-  public parse(): AST.Expr | null {
+  public parse(): AST.Stmt[] {
+    const statements: AST.Stmt[] = [];
+
     try {
-      return this.expression();
-    } catch (error) {
-      return null;
+      while (!this.isAtEnd() && !this.match(TokenType.EOF)) {
+        statements.push(this.statement());
+      }
+
+      return statements;
+    } catch (parserError) {
+      console.log('!', parserError.toString());
+
+      return [];
     }
   }
 }

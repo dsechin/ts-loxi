@@ -3,7 +3,14 @@ import * as AST from './ast';
 import {reportRuntimeError, RuntimeError} from './error';
 import {Token, TokenType} from './token';
 
-export class Interpreter implements AST.Visitor<unknown> {
+export class Interpreter implements
+  AST.ExprVisitor<unknown>,
+  AST.StmtVisitor<void> {
+
+  private execute(stmt: AST.Stmt): void {
+    stmt.accept(this);
+  }
+
   private evaluate(expr: AST.Expr): unknown {
     return expr.accept(this);
   }
@@ -49,17 +56,27 @@ export class Interpreter implements AST.Visitor<unknown> {
       return String(value);
     }
 
-    return  String(value);
+    return String(value);
   }
 
-  public interpret(expression: AST.Expr): void{
+  public interpret(statements: AST.Stmt[]): void{
     try {
-      const value = this.evaluate(expression);
-
-      console.log(this.stringify(value));
+      statements.forEach(statement => {
+        this.execute(statement);
+      });
     } catch (error) {
       reportRuntimeError(error);
     }
+  }
+
+  public visitExpressionStmt(stmt: AST.ExpressionStmt): void {
+    this.evaluate(stmt.expression);
+  }
+
+  public visitPrintStmt(stmt: AST.PrintStmt): void {
+    const value = this.evaluate(stmt.expression);
+
+    console.log(this.stringify(value));
   }
 
   public visitBinaryExpr(expr: AST.BinaryExpr) {

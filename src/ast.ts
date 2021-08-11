@@ -1,10 +1,11 @@
 import {Token} from './token';
 
+/* EXPRESSIONS */
 export abstract class Expr {
-  abstract accept<T>(visitor: Visitor<T>): T;
+  abstract accept<T>(visitor: ExprVisitor<T>): T;
 }
 
-export interface Visitor<T> {
+export interface ExprVisitor<T> {
   visitTernaryExpr(expr: TernaryExpr): T;
   visitBinaryExpr(expr: BinaryExpr): T;
   visitGroupingExpr(expr: GroupingExpr): T;
@@ -22,7 +23,7 @@ export class TernaryExpr extends Expr {
     super();
   }
 
-  accept<T>(visitor: Visitor<T>): T {
+  accept<T>(visitor: ExprVisitor<T>): T {
     return visitor.visitTernaryExpr(this);
   }
 }
@@ -36,7 +37,7 @@ export class BinaryExpr extends Expr {
     super();
   }
 
-  accept<T>(visitor: Visitor<T>): T {
+  accept<T>(visitor: ExprVisitor<T>): T {
     return visitor.visitBinaryExpr(this);
   }
 }
@@ -48,7 +49,7 @@ export class GroupingExpr extends Expr {
     super();
   }
 
-  accept<T>(visitor: Visitor<T>): T {
+  accept<T>(visitor: ExprVisitor<T>): T {
     return visitor.visitGroupingExpr(this);
   }
 }
@@ -60,7 +61,7 @@ export class LiteralExpr extends Expr {
     super();
   }
 
-  accept<T>(visitor: Visitor<T>): T {
+  accept<T>(visitor: ExprVisitor<T>): T {
     return visitor.visitLiteralExpr(this);
   }
 }
@@ -73,7 +74,7 @@ export class UnaryExpr extends Expr {
     super();
   }
 
-  accept<T>(visitor: Visitor<T>): T {
+  accept<T>(visitor: ExprVisitor<T>): T {
     return visitor.visitUnaryExpr(this);
   }
 }
@@ -83,8 +84,43 @@ export class NoOpExpr extends Expr {
     super();
   }
 
-  accept<T>(visitor: Visitor<T>): T {
+  accept<T>(visitor: ExprVisitor<T>): T {
     return visitor.visitNoOpExpr(this);
+  }
+}
+
+
+/* STATEMENTS */
+export abstract class Stmt {
+  abstract accept<T>(visitor: StmtVisitor<T>): T;
+}
+
+export interface StmtVisitor<T> {
+  visitExpressionStmt(expr: ExpressionStmt): T;
+  visitPrintStmt(expr: PrintStmt): T;
+}
+
+export class ExpressionStmt extends Stmt {
+  constructor(
+    public expression: Expr,
+  ) {
+    super();
+  }
+
+  accept<T>(visitor: StmtVisitor<T>): T {
+    return visitor.visitExpressionStmt(this);
+  }
+}
+
+export class PrintStmt extends Stmt {
+  constructor(
+    public expression: Expr,
+  ) {
+    super();
+  }
+
+  accept<T>(visitor: StmtVisitor<T>): T {
+    return visitor.visitPrintStmt(this);
   }
 }
 

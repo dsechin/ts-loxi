@@ -14,10 +14,22 @@ const exprSubclasses = generateAstClasses(
   'Expr',
 );
 
+const stmtSubclasses = generateAstClasses(
+  [
+    'Expression -> expression: Expr',
+    'Print      -> expression: Expr',
+  ],
+  'Stmt',
+);
+
 const fullFile = `
 import {Token} from './token';
 
+/* EXPRESSIONS */
 ${exprSubclasses}
+
+/* STATEMENTS */
+${stmtSubclasses}
 `;
 
 const fullPath = path.join(__dirname, '..', 'src', 'ast.ts');
