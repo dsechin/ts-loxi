@@ -52,12 +52,14 @@ export class Parser {
     return false;
   }
 
-  private consume(type: TokenType, message: string) {
+  private consume(type: TokenType, message: string): Token {
     if (this.check(type)) {
       return this.advance();
     }
 
     this.error(this.peek(), message);
+
+    return this.startGuard;
   }
 
   private error(token: Token, message: string) {
@@ -67,6 +69,34 @@ export class Parser {
   }
 
   /** GRAMMAR RULES **/
+
+  /**
+   * declaration → varDecl
+   *             | statement ;
+   */
+  private declaration(): AST.Stmt {
+    try {
+      if (this.match(TokenType.VAR)) {
+        return this.variableDeclaration();
+      }
+
+      return this.statement();
+    } catch (error) {
+      return new AST.ExpressionStmt(new AST.NoOpExpr());
+    }
+  }
+
+  private variableDeclaration(): AST.Stmt {
+    const name = this.consume(TokenType.IDENTIFIER, 'Expect variable name');
+
+    const initializer = this.match(TokenType.EQUAL)
+      ? this.expression()
+      : new AST.LiteralExpr(null);
+
+    this.consume(TokenType.SEMICOLON, 'Expect ";" after variable declaration.');
+
+    return new AST.VarStmt(name, initializer);
+  }
 
   /**
    * statement → exprStmt
@@ -243,7 +273,8 @@ export class Parser {
 
   /**
    * primary → NUMBER | STRING | "true" | "false" | "nil"
-   *         | "(" expression ")" ;
+   *         | "(" expression ")"
+   *         | IDENTIFIER ;
    */
   private primary(): AST.Expr {
     if (this.match(TokenType.TRUE)) {
@@ -260,6 +291,10 @@ export class Parser {
 
     if (this.match(TokenType.NUMBER, TokenType.STRING)) {
       return new AST.LiteralExpr(this.previous().literal);
+    }
+
+    if (this.match(TokenType.IDENTIFIER)) {
+      return new AST.VariableExpr(this.previous());
     }
 
     if (this.match(TokenType.LEFT_PAREN)) {
@@ -305,13 +340,11 @@ export class Parser {
 
     try {
       while (!this.isAtEnd() && !this.match(TokenType.EOF)) {
-        statements.push(this.statement());
+        statements.push(this.declaration());
       }
 
       return statements;
     } catch (parserError) {
-      console.log('!', parserError.toString());
-
       return [];
     }
   }

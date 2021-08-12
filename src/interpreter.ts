@@ -1,11 +1,18 @@
 import _ from 'lodash';
 import * as AST from './ast';
+import {Environment} from './environment';
 import {reportRuntimeError, RuntimeError} from './error';
 import {Token, TokenType} from './token';
 
 export class Interpreter implements
   AST.ExprVisitor<unknown>,
   AST.StmtVisitor<void> {
+
+  private environment: Environment;
+
+  constructor() {
+    this.environment = new Environment();
+  }
 
   private execute(stmt: AST.Stmt): void {
     stmt.accept(this);
@@ -67,6 +74,14 @@ export class Interpreter implements
     } catch (error) {
       reportRuntimeError(error);
     }
+  }
+
+  public visitVarStmt(stmt: AST.VarStmt): void {
+    const value = this.isTruthly(stmt.initializer)
+      ? this.evaluate(stmt.initializer)
+      : null;
+
+    this.environment.define(stmt.name.lexeme, value);
   }
 
   public visitExpressionStmt(stmt: AST.ExpressionStmt): void {
@@ -199,5 +214,9 @@ export class Interpreter implements
 
   public visitGroupingExpr(expr: AST.GroupingExpr) {
     return this.evaluate(expr.expression);
+  }
+
+  public visitVariableExpr(expr: AST.VariableExpr) {
+    return this.environment.get(expr.name);
   }
 }

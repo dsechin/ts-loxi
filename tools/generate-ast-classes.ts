@@ -4,11 +4,12 @@ import {generateAstClasses} from './ast-utils';
 
 const exprSubclasses = generateAstClasses(
   [
-    'Ternary  -> condition: Expr, truthly: Expr, falsey: Expr',
+    'Ternary  -> condition : Expr, truthly : Expr, falsey : Expr',
     'Binary   -> left : Expr, operator : Token, right : Expr',
-    'Grouping -> expression: Expr',
+    'Grouping -> expression : Expr',
     'Literal  -> value : unknown',
     'Unary    -> operator : Token, right : Expr',
+    'Variable -> name : Token',
     'NoOp     -> ',
   ],
   'Expr',
@@ -16,8 +17,9 @@ const exprSubclasses = generateAstClasses(
 
 const stmtSubclasses = generateAstClasses(
   [
-    'Expression -> expression: Expr',
-    'Print      -> expression: Expr',
+    'Expression -> expression : Expr',
+    'Print      -> expression : Expr',
+    'Var        -> name : Token, initializer: Expr',
   ],
   'Stmt',
 );

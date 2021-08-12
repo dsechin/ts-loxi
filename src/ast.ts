@@ -11,6 +11,7 @@ export interface ExprVisitor<T> {
   visitGroupingExpr(expr: GroupingExpr): T;
   visitLiteralExpr(expr: LiteralExpr): T;
   visitUnaryExpr(expr: UnaryExpr): T;
+  visitVariableExpr(expr: VariableExpr): T;
   visitNoOpExpr(expr: NoOpExpr): T;
 }
 
@@ -79,6 +80,18 @@ export class UnaryExpr extends Expr {
   }
 }
 
+export class VariableExpr extends Expr {
+  constructor(
+    public name: Token,
+  ) {
+    super();
+  }
+
+  accept<T>(visitor: ExprVisitor<T>): T {
+    return visitor.visitVariableExpr(this);
+  }
+}
+
 export class NoOpExpr extends Expr {
   constructor() {
     super();
@@ -98,6 +111,7 @@ export abstract class Stmt {
 export interface StmtVisitor<T> {
   visitExpressionStmt(expr: ExpressionStmt): T;
   visitPrintStmt(expr: PrintStmt): T;
+  visitVarStmt(expr: VarStmt): T;
 }
 
 export class ExpressionStmt extends Stmt {
@@ -121,6 +135,19 @@ export class PrintStmt extends Stmt {
 
   accept<T>(visitor: StmtVisitor<T>): T {
     return visitor.visitPrintStmt(this);
+  }
+}
+
+export class VarStmt extends Stmt {
+  constructor(
+    public name: Token,
+    public initializer: Expr,
+  ) {
+    super();
+  }
+
+  accept<T>(visitor: StmtVisitor<T>): T {
+    return visitor.visitVarStmt(this);
   }
 }
 

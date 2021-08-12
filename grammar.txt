@@ -1,5 +1,9 @@
-program        → statement* EOF ;
+program        → declaration* EOF ;
 
+declaration    → varDecl
+               | statement ;
+
+varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
 statement      → exprStmt
                | printStmt ;
 
@@ -17,10 +21,13 @@ factor         → unary ( ( "/" | "*" ) unary )* ;
 unary          → ( "!" | "-" ) unary
                | exponentiation ;
 
-exponentiation → primary ( ** primary )*
+exponentiation → primary ( ** primary )* ;
 
 primary        → NUMBER | STRING | "true" | "false" | "nil"
-               | "(" expression ")" ;
+               | "(" expression ")"
+               | IDENTIFIER ;
+
+
 
 
 Name 	            Operators 	  Associates
