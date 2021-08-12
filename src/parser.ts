@@ -133,10 +133,29 @@ export class Parser {
   }
 
   /**
-   * expression → conditional
+   * expression → assigment
    */
   private expression(): AST.Expr {
-    return this.conditional();
+    return this.assigment();
+  }
+
+  private assigment(): AST.Expr {
+    const expr = this.conditional();
+
+    if (this.match(TokenType.EQUAL)) {
+      const equals = this.previous();
+      const value = this.assigment();
+
+      if (expr instanceof AST.VariableExpr) {
+        const name = expr.name;
+
+        return new AST.AssignExpr(name, value);
+      }
+
+      this.error(equals, 'Invalid assignment target');
+    }
+
+    return expr;
   }
 
   /**

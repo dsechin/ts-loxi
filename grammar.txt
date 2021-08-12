@@ -10,7 +10,9 @@ statement      → exprStmt
 exprStmt       → expression ";" ;
 printStmt      → "print" expression ";" ;
 
-expression     → conditional ;
+expression     → assignment ;
+assignment     → IDENTIFIER "=" assignment
+               | conditional ;
 conditional    → equality "?" equality ":" equality
                | equality ;
 
@@ -32,6 +34,7 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
 
 Name 	            Operators 	  Associates
 ==========================================
+assignment        =             Right
 Conditional       ?:            Right
 Equality 	        == !=   	    Left
 Comparison 	      > >= < <= 	  Left

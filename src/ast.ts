@@ -6,6 +6,7 @@ export abstract class Expr {
 }
 
 export interface ExprVisitor<T> {
+  visitAssignExpr(expr: AssignExpr): T;
   visitTernaryExpr(expr: TernaryExpr): T;
   visitBinaryExpr(expr: BinaryExpr): T;
   visitGroupingExpr(expr: GroupingExpr): T;
@@ -13,6 +14,19 @@ export interface ExprVisitor<T> {
   visitUnaryExpr(expr: UnaryExpr): T;
   visitVariableExpr(expr: VariableExpr): T;
   visitNoOpExpr(expr: NoOpExpr): T;
+}
+
+export class AssignExpr extends Expr {
+  constructor(
+    public name: Token,
+    public value: Expr,
+  ) {
+    super();
+  }
+
+  accept<T>(visitor: ExprVisitor<T>): T {
+    return visitor.visitAssignExpr(this);
+  }
 }
 
 export class TernaryExpr extends Expr {

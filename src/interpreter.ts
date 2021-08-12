@@ -94,7 +94,15 @@ export class Interpreter implements
     console.log(this.stringify(value));
   }
 
-  public visitBinaryExpr(expr: AST.BinaryExpr) {
+  public visitAssignExpr(stmt: AST.AssignExpr): unknown {
+    const value = this.evaluate(stmt.value);
+
+    this.environment.assign(stmt.name, value);
+
+    return value;
+  }
+
+  public visitBinaryExpr(expr: AST.BinaryExpr): unknown {
     const left = this.evaluate(expr.left);
     const right = this.evaluate(expr.right);
 
@@ -179,7 +187,7 @@ export class Interpreter implements
     return null;
   }
 
-  public visitTernaryExpr(expr: AST.TernaryExpr) {
+  public visitTernaryExpr(expr: AST.TernaryExpr): unknown {
     const condition = this.evaluate(expr.condition);
     const truthly = this.evaluate(expr.truthly);
     const falsey = this.evaluate(expr.falsey);
@@ -187,7 +195,7 @@ export class Interpreter implements
     return this.isTruthly(condition) ? truthly : falsey;
   }
 
-  public visitUnaryExpr(expr: AST.BinaryExpr) {
+  public visitUnaryExpr(expr: AST.BinaryExpr): unknown {
     const right = this.evaluate(expr.right);
 
     switch (expr.operator.type) {
@@ -204,19 +212,19 @@ export class Interpreter implements
     return null;
   }
 
-  public visitLiteralExpr(expr: AST.LiteralExpr) {
+  public visitLiteralExpr(expr: AST.LiteralExpr): unknown {
     return expr.value;
   }
 
-  public visitNoOpExpr(expr: AST.NoOpExpr) {
+  public visitNoOpExpr(expr: AST.NoOpExpr): unknown {
     return null;
   }
 
-  public visitGroupingExpr(expr: AST.GroupingExpr) {
+  public visitGroupingExpr(expr: AST.GroupingExpr): unknown{
     return this.evaluate(expr.expression);
   }
 
-  public visitVariableExpr(expr: AST.VariableExpr) {
+  public visitVariableExpr(expr: AST.VariableExpr): unknown {
     return this.environment.get(expr.name);
   }
 }
