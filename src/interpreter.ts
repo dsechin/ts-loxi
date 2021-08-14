@@ -91,9 +91,10 @@ export class Interpreter implements
   }
 
   public visitVarStmt(stmt: AST.VarStmt): void {
-    const value = this.isTruthly(stmt.initializer)
-      ? this.evaluate(stmt.initializer)
-      : null;
+    const initialValue = this.evaluate(stmt.initializer);
+    const value = this.isTruthly(initialValue)
+      ? initialValue
+      : undefined;
 
     this.environment.define(stmt.name.lexeme, value);
   }

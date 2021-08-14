@@ -9,6 +9,13 @@ export class Environment {
     private enclosing: Environment | null = null,
   ) {}
 
+  private throwUndefinedVariableError(name: Token): void {
+    throw new RuntimeError(
+      name,
+      `Undefined variable '${name.lexeme}'.`,
+    );
+  }
+
   private isDefined(name: string): boolean {
     return Object.keys(this.values).includes(name);
   }
@@ -30,24 +37,27 @@ export class Environment {
       return;
     }
 
-    throw new RuntimeError(
-      name,
-      `Undefined variable '${name.lexeme}'.`,
-    );
+    this.throwUndefinedVariableError(name);
   }
 
   public get(name: Token): unknown {
     if (this.isDefined(name.lexeme)) {
-      return this.values[name.lexeme];
+      const value = this.values[name.lexeme];
+
+      if (_.isUndefined(value)) {
+        throw new RuntimeError(
+          name,
+          `No value assigned to the '${name.lexeme}' variable.`,
+        );
+      } else {
+        return value;
+      }
     }
 
     if (!_.isNull(this.enclosing)) {
       return this.enclosing.get(name);
     }
 
-    throw new RuntimeError(
-      name,
-      `Undefined variable '${name.lexeme}'.`,
-    );
+    this.throwUndefinedVariableError(name);
   }
 }
