@@ -60,12 +60,23 @@ export class Interpreter implements
     throw new RuntimeError(operator, 'Operand must be a number.');
   }
 
+  private checkOperandsType(
+    left: unknown,
+    right: unknown,
+    predicate: (val: unknown) => boolean,
+  ): boolean {
+    return predicate(left) && predicate(right);
+  }
+
   private checkNumberOperands(operator: Token, left: unknown, right: unknown): void {
-    if (_.isNumber(left) && _.isNumber(right)) {
+    if (this.checkOperandsType(left, right, (val) => _.isNumber(val))) {
       return;
     }
 
-    throw new RuntimeError(operator, 'Operand must be a number.');
+    throw new RuntimeError(
+      operator,
+      'Both operands must be either numbers or strings',
+    );
   }
 
   private stringify(value: unknown): string {
@@ -140,34 +151,76 @@ export class Interpreter implements
     switch (expr.operator.type) {
       // comparison
       case TokenType.GREATER:
-        this.checkNumberOperands(expr.operator, left, right);
+        if (this.checkOperandsType(left, right, (val) => _.isNumber(val))) {
+          return Number(left) > Number(right);
+        } else if (this.checkOperandsType(left, right, (val) => _.isString(val))) {
+          return String(left) > String(right);
+        }
 
-        return Number(left) > Number(right);
+        throw new RuntimeError(
+          expr.operator,
+          'Both operands must be either numbers or strings',
+        );
 
       case TokenType.GREATER_EQUAL:
-        this.checkNumberOperands(expr.operator, left, right);
+        if (this.checkOperandsType(left, right, (val) => _.isNumber(val))) {
+          return Number(left) >= Number(right);
+        } else if (this.checkOperandsType(left, right, (val) => _.isString(val))) {
+          return String(left) >= String(right);
+        }
 
-        return Number(left) >= Number(right);
+        throw new RuntimeError(
+          expr.operator,
+          'Both operands must be either numbers or strings',
+        );
 
       case TokenType.LESS:
-        this.checkNumberOperands(expr.operator, left, right);
+        if (this.checkOperandsType(left, right, (val) => _.isNumber(val))) {
+          return Number(left) < Number(right);
+        } else if (this.checkOperandsType(left, right, (val) => _.isString(val))) {
+          return String(left) < String(right);
+        }
 
-        return Number(left) < Number(right);
+        throw new RuntimeError(
+          expr.operator,
+          'Both operands must be either numbers or strings',
+        );
 
       case TokenType.LESS_EQUAL:
-        this.checkNumberOperands(expr.operator, left, right);
+        if (this.checkOperandsType(left, right, (val) => _.isNumber(val))) {
+          return Number(left) <= Number(right);
+        } else if (this.checkOperandsType(left, right, (val) => _.isString(val))) {
+          return String(left) <= String(right);
+        }
 
-        return Number(left) <= Number(right);
+        throw new RuntimeError(
+          expr.operator,
+          'Both operands must be either numbers or strings',
+        );
 
       case TokenType.BANG_EQUAL:
-        this.checkNumberOperands(expr.operator, left, right);
+        if (this.checkOperandsType(left, right, (val) => _.isNumber(val))) {
+          return !_.isEqual(Number(left), Number(right));
+        } else if (this.checkOperandsType(left, right, (val) => _.isString(val))) {
+          return !_.isEqual(String(left), String(right));
+        }
 
-        return !this.isEqual(left, right);
+        throw new RuntimeError(
+          expr.operator,
+          'Both operands must be either numbers or strings',
+        );
 
       case TokenType.EQUAL_EQUAL:
-        this.checkNumberOperands(expr.operator, left, right);
+        if (this.checkOperandsType(left, right, (val) => _.isNumber(val))) {
+          return _.isEqual(Number(left), Number(right));
+        } else if (this.checkOperandsType(left, right, (val) => _.isString(val))) {
+          return _.isEqual(String(left), String(right));
+        }
 
-        return this.isEqual(left, right);
+        throw new RuntimeError(
+          expr.operator,
+          'Both operands must be either numbers or strings',
+        );
 
       // arithmetic
       case TokenType.MINUS:
