@@ -1,6 +1,7 @@
 import * as AST from './ast';
 import {Token, TokenType} from './token';
 import {ParseError, reportParserError} from './error';
+import _ from 'lodash';
 
 export class Parser {
   private current = 0;
@@ -104,6 +105,10 @@ export class Parser {
    *           | block ;
    */
   private statement(): AST.Stmt {
+    if (this.match(TokenType.IF)) {
+      return this.ifStatement();
+    }
+
     if (this.match(TokenType.PRINT)) {
       return this.printStatement();
     }
@@ -113,6 +118,24 @@ export class Parser {
     }
 
     return this.expressionStatment();
+  }
+
+  /**
+   * ifStmt → "if" "(" expression ")" statement ( "else" statement )? ;
+   */
+  private ifStatement(): AST.IfStmt {
+    this.consume(TokenType.LEFT_PAREN, 'Expect "(" after if.');
+
+    const condition = this.expression();
+
+    this.consume(TokenType.RIGHT_PAREN, 'Expect ")" after if.');
+
+    const thenBranch = this.statement();
+    const elseBranch = this.match(TokenType.ELSE)
+      ? this.statement()
+      : null;
+
+    return new AST.IfStmt(condition, thenBranch, elseBranch);
   }
 
   /**

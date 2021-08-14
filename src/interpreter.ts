@@ -115,6 +115,16 @@ export class Interpreter implements
     this.executeBlock(stmt.statements, blockEnv);
   }
 
+  public visitIfStmt(stmt: AST.IfStmt): void {
+    const conditionValue = this.evaluate(stmt.condition);
+
+    if (this.isTruthly(conditionValue)) {
+      this.execute(stmt.thenBranch);
+    } else if (stmt.elseBranch) {
+      this.execute(stmt.elseBranch);
+    }
+  }
+
   public visitAssignExpr(stmt: AST.AssignExpr): unknown {
     const value = this.evaluate(stmt.value);
 
