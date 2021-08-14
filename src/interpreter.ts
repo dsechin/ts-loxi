@@ -144,6 +144,22 @@ export class Interpreter implements
     return value;
   }
 
+  public visitLogicalExpr(expr: AST.LogicalExpr): unknown {
+    const left = this.evaluate(expr.left);
+
+    if (expr.operator.type === TokenType.OR) {
+      if (this.isTruthly(left)) {
+        return left;
+      }
+    } else {
+      if (!this.isTruthly(left)) {
+        return left;
+      }
+    }
+
+    return this.evaluate(expr.right);
+  }
+
   public visitBinaryExpr(expr: AST.BinaryExpr): unknown {
     const left = this.evaluate(expr.left);
     const right = this.evaluate(expr.right);

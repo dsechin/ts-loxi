@@ -206,7 +206,7 @@ export class Parser {
    *             | equality ;
    */
   private conditional(): AST.Expr {
-    const condition: AST.Expr = this.equality();
+    const condition: AST.Expr = this.or();
 
     if (this.match(TokenType.QUESTION_MARK)) {
       const truthly = this.equality();
@@ -226,6 +226,38 @@ export class Parser {
     }
 
     return condition;
+  }
+
+  /**
+   * logic_or → logic_and ( "or" logic_and )* ;
+   */
+  private or(): AST.Expr {
+    const left = this.and();
+
+    while (this.match(TokenType.OR)) {
+      const operator = this.previous();
+      const right = this.and();
+
+      return new AST.LogicalExpr(left, operator, right);
+    }
+
+    return left;
+  }
+
+  /**
+   * logic_and → equality ( "and" equality )* ;
+   */
+  private and(): AST.Expr {
+    const left = this.equality();
+
+    while (this.match(TokenType.AND)) {
+      const operator = this.previous();
+      const right = this.equality();
+
+      return new AST.LogicalExpr(left, operator, right);
+    }
+
+    return left;
   }
 
   /**
