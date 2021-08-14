@@ -18,6 +18,7 @@ const exprSubclasses = generateAstClasses(
 
 const stmtSubclasses = generateAstClasses(
   [
+    'Block      -> statements : Stmt[]',
     'Expression -> expression : Expr',
     'Print      -> expression : Expr',
     'Var        -> name : Token, initializer: Expr',

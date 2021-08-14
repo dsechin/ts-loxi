@@ -5,9 +5,7 @@ import yargs from 'yargs/yargs';
 import * as _ from 'lodash';
 import {Scanner} from './scanner';
 import {Parser} from './parser';
-import {AstPrinter} from './ast-printer';
 import {Interpreter} from './interpreter';
-import {RuntimeError} from './error';
 
 const argv = yargs(process.argv.slice(2))
   .usage('$0 [script]')

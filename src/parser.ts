@@ -100,14 +100,34 @@ export class Parser {
 
   /**
    * statement → exprStmt
-   *           | printStmt ;
+   *           | printStmt
+   *           | block ;
    */
   private statement(): AST.Stmt {
     if (this.match(TokenType.PRINT)) {
       return this.printStatement();
     }
 
+    if (this.match(TokenType.LEFT_BRACE)) {
+      return new AST.BlockStmt(this.blockContents());
+    }
+
     return this.expressionStatment();
+  }
+
+  /**
+   * block → "{" declaration* "}" ;
+   */
+  private blockContents(): AST.Stmt[] {
+    const declarations = [];
+
+    while (!this.check(TokenType.RIGHT_BRACE) && !this.isAtEnd()) {
+      declarations.push(this.declaration());
+    }
+
+    this.consume(TokenType.RIGHT_BRACE, 'Expect "}" after block');
+
+    return declarations;
   }
 
   /**

@@ -1,10 +1,13 @@
+import _ from 'lodash';
 import {RuntimeError} from './error';
 import {Token} from './token';
 
 export class Environment {
   private values: Record<string, unknown> = {};
 
-  constructor() {}
+  constructor(
+    private enclosing: Environment | null = null,
+  ) {}
 
   private isDefined(name: string): boolean {
     return Object.keys(this.values).includes(name);
@@ -21,6 +24,12 @@ export class Environment {
       return;
     }
 
+    if (!_.isNull(this.enclosing)) {
+      this.enclosing.assign(name, value);
+
+      return;
+    }
+
     throw new RuntimeError(
       name,
       `Undefined variable '${name.lexeme}'.`,
@@ -30,6 +39,10 @@ export class Environment {
   public get(name: Token): unknown {
     if (this.isDefined(name.lexeme)) {
       return this.values[name.lexeme];
+    }
+
+    if (!_.isNull(this.enclosing)) {
+      return this.enclosing.get(name);
     }
 
     throw new RuntimeError(

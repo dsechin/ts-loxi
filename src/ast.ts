@@ -123,9 +123,22 @@ export abstract class Stmt {
 }
 
 export interface StmtVisitor<T> {
+  visitBlockStmt(expr: BlockStmt): T;
   visitExpressionStmt(expr: ExpressionStmt): T;
   visitPrintStmt(expr: PrintStmt): T;
   visitVarStmt(expr: VarStmt): T;
+}
+
+export class BlockStmt extends Stmt {
+  constructor(
+    public statements: Stmt[],
+  ) {
+    super();
+  }
+
+  accept<T>(visitor: StmtVisitor<T>): T {
+    return visitor.visitBlockStmt(this);
+  }
 }
 
 export class ExpressionStmt extends Stmt {

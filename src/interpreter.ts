@@ -18,6 +18,20 @@ export class Interpreter implements
     stmt.accept(this);
   }
 
+  private executeBlock(statements: AST.Stmt[], environment: Environment): void {
+    const prevEnv = this.environment;
+
+    try {
+      this.environment = environment;
+
+      statements.forEach(statement => {
+        this.execute(statement);
+      });
+    } finally {
+      this.environment = prevEnv;
+    }
+  }
+
   private evaluate(expr: AST.Expr): unknown {
     return expr.accept(this);
   }
@@ -92,6 +106,12 @@ export class Interpreter implements
     const value = this.evaluate(stmt.expression);
 
     console.log(this.stringify(value));
+  }
+
+  public visitBlockStmt(stmt: AST.BlockStmt): void {
+    const blockEnv = new Environment(this.environment);
+
+    this.executeBlock(stmt.statements, blockEnv);
   }
 
   public visitAssignExpr(stmt: AST.AssignExpr): unknown {
