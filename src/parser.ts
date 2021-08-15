@@ -1,7 +1,7 @@
+import _ from 'lodash';
 import * as AST from './ast';
 import {Token, TokenType} from './token';
 import {ParseError, reportParserError} from './error';
-import _ from 'lodash';
 
 export class Parser {
   private current = 0;
@@ -101,10 +101,17 @@ export class Parser {
 
   /**
    * statement → exprStmt
+   *           | ifStmt
    *           | printStmt
+   *           | whileStmt
+   *           | forStmt
    *           | block ;
    */
   private statement(): AST.Stmt {
+    if (this.match(TokenType.FOR)) {
+      return this.forStatment();
+    }
+
     if (this.match(TokenType.IF)) {
       return this.ifStatement();
     }
@@ -122,6 +129,60 @@ export class Parser {
     }
 
     return this.expressionStatment();
+  }
+
+  /**
+   * Converts "for" statements into "while" statements
+   *
+   * forStmt → "for" "(" ( varDecl | exprStmt | ";" )
+   *           expression? ";"
+   *           expression? ")" statement ;
+   */
+  private forStatment(): AST.Stmt {
+    this.consume(TokenType.LEFT_PAREN, 'Expect "(" after for.');
+
+    let initializer: AST.Stmt | null;
+
+    if (this.match(TokenType.SEMICOLON)) {
+      initializer = null;
+    } else if (this.match(TokenType.VAR)) {
+      initializer = this.variableDeclaration();
+    } else {
+      initializer = this.expressionStatment();
+    }
+
+    const condition: AST.Expr | null = this.check(TokenType.SEMICOLON)
+      ? null
+      : this.expression();
+
+    this.consume(TokenType.SEMICOLON, 'Expect ";" after loop condition.');
+
+    const increment: AST.Expr | null = this.check(TokenType.RIGHT_PAREN)
+      ? null
+      : this.expression();
+
+      this.consume(TokenType.RIGHT_PAREN, 'Expect ")" after for clauses.');
+
+    let body = this.statement();
+
+    if (increment) {
+      body = new AST.BlockStmt([
+        body,
+        new AST.ExpressionStmt(increment),
+      ]);
+    }
+
+    const whileCondition = _.isNull(condition)
+      ? new AST.LiteralExpr(true)
+      : condition;
+
+    body = new AST.WhileStmt(whileCondition, body);
+
+    if (initializer) {
+      body = new AST.BlockStmt([initializer, body]);
+    }
+
+    return body;
   }
 
   /**
