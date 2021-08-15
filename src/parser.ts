@@ -113,6 +113,10 @@ export class Parser {
       return this.printStatement();
     }
 
+    if (this.match(TokenType.WHILE)) {
+      return this.whileStatement();
+    }
+
     if (this.match(TokenType.LEFT_BRACE)) {
       return new AST.BlockStmt(this.blockContents());
     }
@@ -136,6 +140,21 @@ export class Parser {
       : null;
 
     return new AST.IfStmt(condition, thenBranch, elseBranch);
+  }
+
+  /**
+   * whileStmt → "while" "(" expression ")" statement ;
+   */
+  private whileStatement(): AST.WhileStmt {
+    this.consume(TokenType.LEFT_PAREN, 'Expect "(" after while.');
+
+    const condition = this.expression();
+
+    this.consume(TokenType.RIGHT_PAREN, 'Expect ")" after while.');
+
+    const body = this.statement();
+
+    return new AST.WhileStmt(condition, body);
   }
 
   /**

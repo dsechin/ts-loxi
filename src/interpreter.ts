@@ -136,6 +136,12 @@ export class Interpreter implements
     }
   }
 
+  public visitWhileStmt(stmt: AST.WhileStmt): void {
+    while (this.isTruthly(this.evaluate(stmt.condition))) {
+      this.execute(stmt.body);
+    }
+  }
+
   public visitAssignExpr(stmt: AST.AssignExpr): unknown {
     const value = this.evaluate(stmt.value);
 
@@ -216,9 +222,9 @@ export class Interpreter implements
 
       case TokenType.BANG_EQUAL:
         if (this.checkOperandsType(left, right, (val) => _.isNumber(val))) {
-          return !_.isEqual(Number(left), Number(right));
+          return this.isEqual(Number(left), Number(right));
         } else if (this.checkOperandsType(left, right, (val) => _.isString(val))) {
-          return !_.isEqual(String(left), String(right));
+          return this.isEqual(String(left), String(right));
         }
 
         throw new RuntimeError(
@@ -228,9 +234,9 @@ export class Interpreter implements
 
       case TokenType.EQUAL_EQUAL:
         if (this.checkOperandsType(left, right, (val) => _.isNumber(val))) {
-          return _.isEqual(Number(left), Number(right));
+          return this.isEqual(Number(left), Number(right));
         } else if (this.checkOperandsType(left, right, (val) => _.isString(val))) {
-          return _.isEqual(String(left), String(right));
+          return this.isEqual(String(left), String(right));
         }
 
         throw new RuntimeError(

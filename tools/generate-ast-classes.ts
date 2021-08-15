@@ -22,6 +22,7 @@ const stmtSubclasses = generateAstClasses(
     'Block      -> statements : Stmt[]',
     'Expression -> expression : Expr',
     'If         -> condition : Expr, thenBranch : Stmt, elseBranch : Stmt | null',
+    'While      -> condition : Expr, body : Stmt',
     'Print      -> expression : Expr',
     'Var        -> name : Token, initializer: Expr',
   ],
