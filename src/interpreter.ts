@@ -2,7 +2,7 @@ import _ from 'lodash';
 import * as AST from './ast';
 import {ICallable, TFunction} from './callable';
 import {Environment} from './environment';
-import {reportRuntimeError, RuntimeError, BreakError} from './error';
+import {reportRuntimeError, RuntimeError, Break, Return} from './error';
 import {Clock} from './native-functions';
 import {Token, TokenType} from './token';
 
@@ -16,7 +16,7 @@ export class Interpreter implements
 
   constructor() {
     this.globals = new Environment();
-    this.environment = new Environment();
+    this.environment = this.globals;
 
     this.globals.define('clock', new Clock());
   }
@@ -150,7 +150,7 @@ export class Interpreter implements
   }
 
   public visitBreakStmt(stmt: AST.BreakStmt): void {
-    throw new BreakError();
+    throw new Break();
   }
 
   public visitWhileStmt(stmt: AST.WhileStmt): void {
@@ -158,7 +158,7 @@ export class Interpreter implements
       try {
         this.execute(stmt.body);
       } catch (err) {
-        if (err instanceof BreakError) {
+        if (err instanceof Break) {
           break;
         } else {
           throw err; // rethrow
@@ -339,6 +339,14 @@ export class Interpreter implements
     }
 
     return func.call(this, args);
+  }
+
+  public visitReturnStmt(stmt: AST.ReturnStmt): unknown {
+    const value = _.isNull(stmt.value)
+      ? null
+      : this.evaluate(stmt.value);
+
+    throw new Return(value);
   }
 
   public visitTernaryExpr(expr: AST.TernaryExpr): unknown {

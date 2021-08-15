@@ -14,7 +14,10 @@ statement      → exprStmt
                | whileStmt
                | forStmt
                | breakStmt
+               | returnStmt
                | block ;
+
+returnStmt     → "return" expression? ";" ;
 
 breakStmt      → "break" ";" ;
 

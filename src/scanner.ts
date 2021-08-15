@@ -19,13 +19,13 @@ export class Scanner {
     'nil': TokenType.NIL,
     'or': TokenType.OR,
     'print': TokenType.PRINT,
-    'return': TokenType.SUPER,
     'super': TokenType.SUPER,
     'this': TokenType.THIS,
     'true': TokenType.TRUE,
     'var': TokenType.VAR,
     'while': TokenType.WHILE,
     'break': TokenType.BREAK,
+    'return': TokenType.RETURN,
   };
   /* eslint-enable quote-props */
 

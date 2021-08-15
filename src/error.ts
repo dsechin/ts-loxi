@@ -10,14 +10,22 @@ export class ParseError extends Error {
 }
 export class RuntimeError extends Error {
   constructor(
-    public token: Token,
+    public token: Token | null,
     public message: string,
   ) {
     super(message);
   }
 }
 
-export class BreakError extends Error {}
+export class Break extends Error {}
+
+export class Return extends RuntimeError {
+  constructor(
+    public value: unknown,
+  ) {
+    super(null, '');
+  }
+}
 
 export const reportScannerError = (line: number, message: string): void => {
   report(line, '', message);

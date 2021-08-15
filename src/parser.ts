@@ -157,6 +157,7 @@ export class Parser {
    *           | whileStmt
    *           | forStmt
    *           | breakStmt
+   *           | returnStmt
    *           | block ;
    */
   private statement(): AST.Stmt {
@@ -174,6 +175,10 @@ export class Parser {
 
     if (this.match(TokenType.PRINT)) {
       return this.printStatement();
+    }
+
+    if (this.match(TokenType.RETURN)) {
+      return this.returnStatement();
     }
 
     if (this.match(TokenType.WHILE)) {
@@ -262,6 +267,20 @@ export class Parser {
       : null;
 
     return new AST.IfStmt(condition, thenBranch, elseBranch);
+  }
+
+  /**
+   * returnStmt → "return" expression? ";" ;
+   */
+  private returnStatement(): AST.ReturnStmt {
+    const keyword = this.previous();
+    const value = this.check(TokenType.SEMICOLON)
+      ? null
+      : this.expression();
+
+    this.consume(TokenType.SEMICOLON, 'Expect ";" after return.');
+
+    return new AST.ReturnStmt(keyword, value);
   }
 
   /**
