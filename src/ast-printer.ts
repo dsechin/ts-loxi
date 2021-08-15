@@ -15,7 +15,7 @@ export class AstPrinter implements AST.ExprVisitor<string> {
     return expr.accept(this);
   }
 
-  public visitBinaryExpr(expr: AST.BinaryExpr) {
+  public visitBinaryExpr(expr: AST.BinaryExpr): string {
     return this.parenthesize(
       expr.operator.lexeme,
       expr.left,
@@ -23,7 +23,33 @@ export class AstPrinter implements AST.ExprVisitor<string> {
     );
   }
 
-  public visitTernaryExpr(expr: AST.TernaryExpr) {
+  public visitAssignExpr(expr: AST.AssignExpr): string {
+    return `[[${expr.name.lexeme} <- ${expr.value.accept(this)}]]`;
+  }
+
+  public visitCallExpr(expr: AST.CallExpr): string {
+    const argsStr: string = expr.args
+      .map(arg => arg.accept(this))
+      .join(',');
+
+    return `call <${expr.callee.accept(this)}> (${argsStr})`;
+  }
+
+  public visitLogicalExpr(expr: AST.LogicalExpr): string {
+    const binaryStr = this.parenthesize(
+      expr.operator.lexeme,
+      expr.left,
+      expr.right,
+    );
+
+    return `TF ${binaryStr}`;
+  }
+
+  public visitVariableExpr(expr: AST.VariableExpr): string {
+    return `VAR ${expr.name.lexeme}`;
+  }
+
+  public visitTernaryExpr(expr: AST.TernaryExpr): string {
     const chunks: string[] = [
       expr.condition.accept(this),
       `? ${expr.truthly.accept(this)}`,
@@ -33,14 +59,14 @@ export class AstPrinter implements AST.ExprVisitor<string> {
     return `( ${chunks.join(' ')} )`;
   }
 
-  public visitUnaryExpr(expr: AST.BinaryExpr) {
+  public visitUnaryExpr(expr: AST.BinaryExpr): string {
     return this.parenthesize(
       expr.operator.lexeme,
       expr.right,
     );
   }
 
-  public visitLiteralExpr(expr: AST.LiteralExpr) {
+  public visitLiteralExpr(expr: AST.LiteralExpr): string {
     if (_.isNull(expr.value)) {
       return 'nil';
     }
@@ -48,11 +74,11 @@ export class AstPrinter implements AST.ExprVisitor<string> {
     return String(expr.value);
   }
 
-  public visitNoOpExpr(expr: AST.NoOpExpr) {
+  public visitNoOpExpr(expr: AST.NoOpExpr): string {
     return '';
   }
 
-  public visitGroupingExpr(expr: AST.GroupingExpr) {
+  public visitGroupingExpr(expr: AST.GroupingExpr): string {
     return this.parenthesize('group', expr.expression);
   }
 }
