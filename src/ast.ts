@@ -142,6 +142,7 @@ export interface StmtVisitor<T> {
   visitExpressionStmt(expr: ExpressionStmt): T;
   visitIfStmt(expr: IfStmt): T;
   visitWhileStmt(expr: WhileStmt): T;
+  visitBreakStmt(expr: BreakStmt): T;
   visitPrintStmt(expr: PrintStmt): T;
   visitVarStmt(expr: VarStmt): T;
 }
@@ -194,6 +195,16 @@ export class WhileStmt extends Stmt {
 
   accept<T>(visitor: StmtVisitor<T>): T {
     return visitor.visitWhileStmt(this);
+  }
+}
+
+export class BreakStmt extends Stmt {
+  constructor() {
+    super();
+  }
+
+  accept<T>(visitor: StmtVisitor<T>): T {
+    return visitor.visitBreakStmt(this);
   }
 }
 

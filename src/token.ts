@@ -48,6 +48,7 @@ export enum TokenType {
   VAR = 'VAR',
   WHILE = 'WHILE',
   EOF = 'EOF',
+  BREAK = 'BREAK',
 }
 
 export class Token {

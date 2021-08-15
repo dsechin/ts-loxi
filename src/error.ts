@@ -17,6 +17,8 @@ export class RuntimeError extends Error {
   }
 }
 
+export class BreakError extends Error {}
+
 export const reportScannerError = (line: number, message: string): void => {
   report(line, '', message);
 };

@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import * as AST from './ast';
 import {Environment} from './environment';
-import {reportRuntimeError, RuntimeError} from './error';
+import {reportRuntimeError, RuntimeError, BreakError} from './error';
 import {Token, TokenType} from './token';
 
 export class Interpreter implements
@@ -136,9 +136,21 @@ export class Interpreter implements
     }
   }
 
+  public visitBreakStmt(stmt: AST.BreakStmt): void {
+    throw new BreakError();
+  }
+
   public visitWhileStmt(stmt: AST.WhileStmt): void {
     while (this.isTruthly(this.evaluate(stmt.condition))) {
-      this.execute(stmt.body);
+      try {
+        this.execute(stmt.body);
+      } catch (err) {
+        if (err instanceof BreakError) {
+          break;
+        } else {
+          throw err; // rethrow
+        }
+      }
     }
   }
 

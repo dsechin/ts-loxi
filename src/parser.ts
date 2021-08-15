@@ -7,6 +7,8 @@ export class Parser {
   private current = 0;
   private readonly startGuard = new Token(TokenType.EOF, '', null, 0);
 
+  private loopNestingLevel = 0;
+
   constructor(
     private readonly tokens: Token[],
   ) {
@@ -105,9 +107,14 @@ export class Parser {
    *           | printStmt
    *           | whileStmt
    *           | forStmt
+   *           | breakStmt
    *           | block ;
    */
   private statement(): AST.Stmt {
+    if (this.match(TokenType.BREAK)) {
+      return this.breakStatement();
+    }
+
     if (this.match(TokenType.FOR)) {
       return this.forStatment();
     }
@@ -161,7 +168,8 @@ export class Parser {
       ? null
       : this.expression();
 
-      this.consume(TokenType.RIGHT_PAREN, 'Expect ")" after for clauses.');
+    this.consume(TokenType.RIGHT_PAREN, 'Expect ")" after for clauses.');
+    this.loopNestingLevel++;
 
     let body = this.statement();
 
@@ -182,7 +190,11 @@ export class Parser {
       body = new AST.BlockStmt([initializer, body]);
     }
 
-    return body;
+    const resStmt = body;
+
+    this.loopNestingLevel--;
+
+    return resStmt;
   }
 
   /**
@@ -213,9 +225,27 @@ export class Parser {
 
     this.consume(TokenType.RIGHT_PAREN, 'Expect ")" after while.');
 
-    const body = this.statement();
+    this.loopNestingLevel++;
 
-    return new AST.WhileStmt(condition, body);
+    const body = this.statement();
+    const resStmt = new AST.WhileStmt(condition, body);
+
+    this.loopNestingLevel--;
+
+    return resStmt;
+  }
+
+  /**
+   * breakStmt → "break" ";"
+   */
+  private breakStatement(): AST.BreakStmt {
+    this.consume(TokenType.SEMICOLON, 'Expect ";" after break');
+
+    if (this.loopNestingLevel === 0) {
+      throw this.error(this.previous(), '"break" is not allowed outside of a loop expression.');
+    }
+
+    return new AST.BreakStmt();
   }
 
   /**
