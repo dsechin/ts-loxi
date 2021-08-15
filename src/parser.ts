@@ -5,7 +5,7 @@ import {ParseError, reportParserError} from './error';
 
 export class Parser {
   private current = 0;
-  private readonly startGuard = new Token(TokenType.EOF, '', null, 0);
+  private readonly boundaryGuard = new Token(TokenType.EOF, '', null, 0);
 
   public readonly MAX_FUNCTION_ARGS = 255;
 
@@ -36,7 +36,7 @@ export class Parser {
   private previous(): Token {
     return this.current > 0
       ? this.tokens[this.current - 1]
-      : this.startGuard;
+      : this.boundaryGuard;
   }
 
   private check(type: TokenType): boolean {
@@ -64,7 +64,7 @@ export class Parser {
 
     this.error(this.peek(), message);
 
-    return this.startGuard;
+    return this.boundaryGuard;
   }
 
   private error(token: Token, message: string) {
