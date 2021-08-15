@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import {Token, TokenType} from './token';
 
 export class ParseError extends Error {
@@ -42,7 +43,9 @@ export const reportParserError = (token: Token, message: string) => {
 export const reportRuntimeError = (error: RuntimeError) => {
   const {token} = error;
 
-  report(token.line, ` at '${token.lexeme}'`, error.message);
+  if (!_.isNull(token)) {
+    report(token.line, ` at '${token.lexeme}'`, error.message);
+  }
 };
 
 export const report = (
