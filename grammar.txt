@@ -62,15 +62,15 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
 
 
 
-Name 	            Operators 	  Associates
+Name              Operators     Associates
 ==========================================
 assignment        =             Right
 Conditional       ? _ : _       Right
 Logical or        or            Left
 Logical and       and           Left
-Equality 	        == !=   	    Left
-Comparison 	      > >= < <= 	  Left
-Term 	            - + 	        Left
-Factor 	          / * 	        Left
-Unary 	          ! - 	        Right
+Equality          == !=         Left
+Comparison        > >= < <=     Left
+Term              - +           Left
+Factor            / *           Left
+Unary             ! -           Right
 Exponentiation    **            Right
