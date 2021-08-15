@@ -7,6 +7,7 @@ const exprSubclasses = generateAstClasses(
     'Assign   -> name: Token, value : Expr',
     'Ternary  -> condition : Expr, truthly : Expr, falsey : Expr',
     'Binary   -> left : Expr, operator : Token, right : Expr',
+    'Call     -> callee : Expr, paren: Token, args : Expr[]',
     'Grouping -> expression : Expr',
     'Literal  -> value : unknown',
     'Logical  -> left : Expr, operator : Token, right : Expr',
@@ -21,6 +22,7 @@ const stmtSubclasses = generateAstClasses(
   [
     'Block      -> statements : Stmt[]',
     'Expression -> expression : Expr',
+    'Function   -> name : Token, params : Token[], body : Stmt[]',
     'If         -> condition : Expr, thenBranch : Stmt, elseBranch : Stmt | null',
     'While      -> condition : Expr, body : Stmt',
     'Break      -> ',

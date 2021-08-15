@@ -1,7 +1,9 @@
 import _ from 'lodash';
 import * as AST from './ast';
+import {ICallable, TFunction} from './callable';
 import {Environment} from './environment';
 import {reportRuntimeError, RuntimeError, BreakError} from './error';
+import {Clock} from './native-functions';
 import {Token, TokenType} from './token';
 
 export class Interpreter implements
@@ -10,15 +12,20 @@ export class Interpreter implements
 
   private environment: Environment;
 
+  public readonly globals: Environment;
+
   constructor() {
+    this.globals = new Environment();
     this.environment = new Environment();
+
+    this.globals.define('clock', new Clock());
   }
 
   private execute(stmt: AST.Stmt): void {
     stmt.accept(this);
   }
 
-  private executeBlock(statements: AST.Stmt[], environment: Environment): void {
+  public executeBlock(statements: AST.Stmt[], environment: Environment): void {
     const prevEnv = this.environment;
 
     try {
@@ -99,6 +106,12 @@ export class Interpreter implements
     } catch (error) {
       reportRuntimeError(error);
     }
+  }
+
+  public visitFunctionStmt(stmt: AST.FunctionStmt): void {
+    const func = new TFunction(stmt);
+
+    this.environment.define(stmt.name.lexeme, func);
   }
 
   public visitVarStmt(stmt: AST.VarStmt): void {
@@ -303,6 +316,29 @@ export class Interpreter implements
 
     // Unreachable
     return null;
+  }
+
+  public visitCallExpr(expr: AST.CallExpr): unknown {
+    const callee = this.evaluate(expr.callee);
+    const args = expr.args.map(arg => {
+      return this.evaluate(arg);
+    });
+
+    // if (!(callee instanceof ICallable)) {
+    //   throw new RuntimeError(expr.paren,
+    //       'Can only call functions and classes.');
+    // }
+
+    const func: ICallable = <ICallable>(callee);
+
+    if (args.length !== func.arity()) {
+      throw new RuntimeError(
+        expr.paren,
+        `Expected ${func.arity.length} arguments, but got ${args.length}.`,
+      );
+    }
+
+    return func.call(this, args);
   }
 
   public visitTernaryExpr(expr: AST.TernaryExpr): unknown {

@@ -7,6 +7,8 @@ export class Parser {
   private current = 0;
   private readonly startGuard = new Token(TokenType.EOF, '', null, 0);
 
+  public readonly MAX_FUNCTION_ARGS = 255;
+
   private loopNestingLevel = 0;
 
   constructor(
@@ -74,11 +76,16 @@ export class Parser {
   /** GRAMMAR RULES **/
 
   /**
-   * declaration → varDecl
+   * declaration → funDecl
+   *             | varDecl
    *             | statement ;
    */
   private declaration(): AST.Stmt {
     try {
+      if (this.match(TokenType.FUN)) {
+        return this.functionDeclaration('function');
+      }
+
       if (this.match(TokenType.VAR)) {
         return this.variableDeclaration();
       }
@@ -89,6 +96,48 @@ export class Parser {
     }
   }
 
+  /**
+   * funDecl → "fun" IDENTIFIER "(" parameters? ")" block ;
+   */
+  private functionDeclaration(kind: string): AST.FunctionStmt {
+    const name = this.consume(TokenType.IDENTIFIER, `Expect ${kind} name`);
+
+    this.consume(TokenType.LEFT_PAREN, 'Expect "(" after a function declaration.');
+
+    const params = this.check(TokenType.RIGHT_PAREN)
+      ? []
+      : this.parameters();
+
+    this.consume(TokenType.RIGHT_PAREN, 'Expect ")" after a function parameters list.');
+    this.consume(TokenType.LEFT_BRACE, `Expect "{" before ${kind} body.`);
+
+    const body = this.blockContents();
+
+    return new AST.FunctionStmt(name, params, body);
+  }
+
+  /**
+   * parameters → IDENTIFIER ( "," IDENTIFIER )* ;
+   */
+  private parameters(): Token[] {
+    const list = [this.consume(TokenType.IDENTIFIER, 'Expect parameter name.')];
+
+    while (this.match(TokenType.COMMA)) {
+      list.push(
+        this.consume(TokenType.IDENTIFIER, 'Expect parameter name.'),
+      );
+
+      if (list.length > this.MAX_FUNCTION_ARGS) {
+        this.error(this.peek(), `Can\'t have more than ${this.MAX_FUNCTION_ARGS} arguments.`);
+      }
+    }
+
+    return list;
+  }
+
+  /**
+   * varDecl → "var" IDENTIFIER ( "=" expression )? ";" ;
+   */
   private variableDeclaration(): AST.Stmt {
     const name = this.consume(TokenType.IDENTIFIER, 'Expect variable name');
 
@@ -457,10 +506,15 @@ export class Parser {
   }
 
   /**
-   * exponentiation → primary ( ** primary )*
+   * exponentiation → primary ( ** factor )*
+   *                | call
    */
   private exponentiation(): AST.Expr {
     let primary: AST.Expr = this.primary();
+
+    if (!this.check(TokenType.STAR_STAR)) {
+      return this.call(primary);
+    }
 
     while (this.match(TokenType.STAR_STAR)) {
       const operator = this.previous();
@@ -468,11 +522,61 @@ export class Parser {
       primary = new AST.BinaryExpr(
         primary,
         operator,
-        this.exponentiation(),
+        this.factor(),
       );
     }
 
     return primary;
+  }
+
+  /**
+   * primary ( "(" arguments? ")" )* ;
+   */
+  private call(callee: AST.Expr): AST.Expr {
+    let expr = callee;
+
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      if (this.match(TokenType.LEFT_PAREN)) {
+        expr = this.finishCall(expr);
+      } else {
+        break;
+      }
+    }
+
+    return expr;
+  }
+
+  private finishCall(callee: AST.Expr): AST.Expr {
+    let args: AST.Expr[] = [];
+
+    if (!this.check(TokenType.RIGHT_PAREN)) {
+      args = this.args();
+    }
+
+    const closingParen = this.consume(
+      TokenType.RIGHT_PAREN,
+      'Expect ")" after function arguments.',
+    );
+
+    return new AST.CallExpr(callee, closingParen, args);
+  }
+
+  /**
+   * arguments → expression ( "," expression )* ;
+   */
+  private args(): AST.Expr[] {
+    const list = [this.expression()];
+
+    while (!this.isAtEnd() && this.match(TokenType.COMMA)) {
+      list.push(this.expression());
+
+      if (list.length > this.MAX_FUNCTION_ARGS) {
+        this.error(this.peek(), `Can\'t have more than ${this.MAX_FUNCTION_ARGS} arguments.`);
+      }
+    }
+
+    return list;
   }
 
   /**
