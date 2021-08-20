@@ -14,3 +14,17 @@ export class Clock implements ICallable {
         return '<native function>';
     }
 }
+
+export class Str implements ICallable {
+    public arity(): number {
+        return 1;
+    }
+
+    public call(interpreter: Interpreter, args: unknown[]): unknown {
+        return String(args[0]);
+    }
+
+    public toString() {
+        return '<native function>';
+    }
+}

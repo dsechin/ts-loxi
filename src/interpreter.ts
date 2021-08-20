@@ -3,7 +3,7 @@ import * as AST from './ast';
 import {ICallable, TFunction, TLambda} from './callable';
 import {Environment} from './environment';
 import {reportRuntimeError, RuntimeError, Break, Return} from './error';
-import {Clock} from './native-functions';
+import * as NativeFunctions from './native-functions';
 import {Token, TokenType} from './token';
 
 export class Interpreter implements
@@ -21,7 +21,8 @@ export class Interpreter implements
 
     this.locals = new Map<AST.Expr, number>();
 
-    this.globals.define('clock', new Clock());
+    this.globals.define('clock', new NativeFunctions.Clock());
+    this.globals.define('str', new NativeFunctions.Str());
   }
 
   private execute(stmt: AST.Stmt): void {
