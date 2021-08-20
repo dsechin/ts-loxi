@@ -4,13 +4,18 @@ import {reportResolverError} from './error';
 import {Interpreter} from './interpreter';
 import {Token} from './token';
 
-export type Scope = Record<string, boolean>;
-
 export enum FUNCTION_TYPE {
   NONE = 'none',
   FUNCTION = 'function',
 }
 
+export enum VAR_STATE {
+  DECLARED = 'DECLARED',
+  DEFINED = 'DEFINED',
+  USED = 'USED',
+}
+
+export type Scope = Record<string, VAR_STATE>;
 export class Resolver implements
   AST.ExprVisitor<void>,
   AST.StmtVisitor<void> {
@@ -30,7 +35,17 @@ export class Resolver implements
   }
 
   private endScope() {
-    this.scopes.pop();
+    const scope = this.scopes.pop();
+
+    const unusedVars = _
+      .chain(scope)
+      .pickBy(value => value !== VAR_STATE.USED)
+      .keys()
+      .value();
+
+    unusedVars.forEach(varName => {
+      console.warn(`"${varName}" variable is declared, but never used`);
+    });
   }
 
   private peekScope(): Scope {
@@ -93,7 +108,7 @@ export class Resolver implements
       return;
     }
 
-    scope[token.lexeme] = false;
+    scope[token.lexeme] = VAR_STATE.DECLARED;
   }
 
   private define(token: Token): void {
@@ -103,7 +118,17 @@ export class Resolver implements
 
     const scope = this.peekScope();
 
-    scope[token.lexeme] = true;
+    scope[token.lexeme] = VAR_STATE.DEFINED;
+  }
+
+  private markUsed(token: Token): void {
+    if (this.scopesStackIsEmpty()) {
+      return;
+    }
+
+    const scope = this.peekScope();
+
+    scope[token.lexeme] = VAR_STATE.USED;
   }
 
   private resolveLocal(expr: AST.Expr, name: Token): void {
@@ -182,7 +207,7 @@ export class Resolver implements
   public visitVariableExpr(expr: AST.VariableExpr): void {
     if (
       !this.scopesStackIsEmpty()
-      && this.peekScope()[expr.name.lexeme] === false
+      && this.peekScope()[expr.name.lexeme] === VAR_STATE.DECLARED
     ) {
       reportResolverError(
         expr.name,
@@ -193,6 +218,7 @@ export class Resolver implements
     }
 
     this.resolveLocal(expr, expr.name);
+    this.markUsed(expr.name);
   }
 
   public visitAssignExpr(expr: AST.AssignExpr): void {
