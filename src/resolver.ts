@@ -152,9 +152,15 @@ export class Resolver implements
       return;
     }
 
-    const scope = this.peekScope();
+    let index = this.scopes.length - 1;
+    let tokenScope = this.scopes[index];
 
-    scope[token.lexeme] = VAR_STATE.USED;
+    while (index > 0 && !_.has(tokenScope, [token.lexeme])) {
+      index--;
+      tokenScope = this.scopes[index];
+    }
+
+    tokenScope[token.lexeme] = VAR_STATE.USED;
   }
 
   private resolveLocal(expr: AST.Expr, name: Token): void {
@@ -269,6 +275,11 @@ export class Resolver implements
     expr.args.forEach(arg => {
       this.resolveExpr(arg);
     });
+
+    if (expr.callee instanceof AST.VariableExpr) {
+      this.markUsed(expr.callee.name);
+    }
+
   }
 
   public visitGroupingExpr(expr: AST.GroupingExpr): void {
