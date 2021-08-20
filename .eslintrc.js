@@ -24,7 +24,62 @@ module.exports = {
         ],
         'extends': [
           'eslint:recommended',
+
+          // @see https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/src/configs/recommended.ts
           'plugin:@typescript-eslint/recommended',
+          /*
+          rules: {
+            '@typescript-eslint/adjacent-overload-signatures': 'error',
+            '@typescript-eslint/ban-ts-comment': 'error',
+            '@typescript-eslint/ban-types': 'error',
+            '@typescript-eslint/explicit-module-boundary-types': 'warn',
+            'no-array-constructor': 'off',
+            '@typescript-eslint/no-array-constructor': 'error',
+            'no-empty-function': 'off',
+            '@typescript-eslint/no-empty-function': 'error',
+            '@typescript-eslint/no-empty-interface': 'error',
+            '@typescript-eslint/no-explicit-any': 'warn',
+            '@typescript-eslint/no-extra-non-null-assertion': 'error',
+            'no-extra-semi': 'off',
+            '@typescript-eslint/no-extra-semi': 'error',
+            '@typescript-eslint/no-inferrable-types': 'error',
+            '@typescript-eslint/no-misused-new': 'error',
+            '@typescript-eslint/no-namespace': 'error',
+            '@typescript-eslint/no-non-null-asserted-optional-chain': 'error',
+            '@typescript-eslint/no-non-null-assertion': 'warn',
+            '@typescript-eslint/no-this-alias': 'error',
+            'no-unused-vars': 'off',
+            '@typescript-eslint/no-unused-vars': 'warn',
+            '@typescript-eslint/no-var-requires': 'error',
+            '@typescript-eslint/prefer-as-const': 'error',
+            '@typescript-eslint/prefer-namespace-keyword': 'error',
+            '@typescript-eslint/triple-slash-reference': 'error',
+          }
+          */
+
+          // @see https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/src/configs/recommended-requiring-type-checking.ts
+          'plugin:@typescript-eslint/recommended-requiring-type-checking',
+          /*
+          rules: {
+            '@typescript-eslint/await-thenable': 'error',
+            '@typescript-eslint/no-floating-promises': 'error',
+            '@typescript-eslint/no-for-in-array': 'error',
+            'no-implied-eval': 'off',
+            '@typescript-eslint/no-implied-eval': 'error',
+            '@typescript-eslint/no-misused-promises': 'error',
+            '@typescript-eslint/no-unnecessary-type-assertion': 'error',
+            '@typescript-eslint/no-unsafe-assignment': 'error',
+            '@typescript-eslint/no-unsafe-call': 'error',
+            '@typescript-eslint/no-unsafe-member-access': 'error',
+            '@typescript-eslint/no-unsafe-return': 'error',
+            '@typescript-eslint/prefer-regexp-exec': 'error',
+            'require-await': 'off',
+            '@typescript-eslint/require-await': 'error',
+            '@typescript-eslint/restrict-plus-operands': 'error',
+            '@typescript-eslint/restrict-template-expressions': 'error',
+            '@typescript-eslint/unbound-method': 'error',
+          }
+          */
         ],
         'rules': {
           '@typescript-eslint/consistent-type-definitions': 'error',
@@ -76,6 +131,14 @@ module.exports = {
           ],
           '@typescript-eslint/type-annotation-spacing': 'error',
           '@typescript-eslint/unified-signatures': 'error',
+
+          '@typescript-eslint/prefer-regexp-exec': 'off',
+          '@typescript-eslint/restrict-plus-operands': 'off',
+          '@typescript-eslint/restrict-template-expressions': 'off',
+          '@typescript-eslint/no-unsafe-assignment': 'off',
+
+          '@typescript-eslint/consistent-type-definitions': 'error',
+
           'brace-style': [
             'error',
             '1tbs',
