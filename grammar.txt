@@ -57,7 +57,10 @@ arguments      → expression ( "," expression )* ;
 
 primary        → NUMBER | STRING | "true" | "false" | "nil"
                | "(" expression ")"
+               | lambda
                | IDENTIFIER ;
+
+lambda         → "fun" IDENTIFIER? "(" parameters? ")" block ;
 
 
 

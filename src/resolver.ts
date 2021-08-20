@@ -92,6 +92,32 @@ export class Resolver implements
     this.currentFunction = enclosingFunction;
   }
 
+  private resolveLambda(
+    expr: AST.LambdaExpr,
+    functionType: FUNCTION_TYPE,
+  ): void {
+    const enclosingFunction = this.currentFunction;
+
+    this.currentFunction = functionType;
+
+    this.beginScope();
+
+    expr.params.forEach((param, index) => {
+      this.declare(param);
+      this.define(param);
+
+      if (index < expr.params.length - 1) {
+        this.markUsed(param);
+      }
+    });
+
+    this.resolveStmtList(expr.body);
+
+    this.endScope();
+
+    this.currentFunction = enclosingFunction;
+  }
+
   private declare(token: Token): void {
     if (this.scopesStackIsEmpty()) {
       return;
@@ -266,6 +292,15 @@ export class Resolver implements
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public visitNoOpExpr(expr: AST.NoOpExpr): void {
 
+  }
+
+  public visitLambdaExpr(expr: AST.LambdaExpr): void {
+    if (!_.isNull(expr.name)) {
+      this.declare(expr.name);
+      this.define(expr.name);
+    }
+
+    this.resolveLambda(expr, FUNCTION_TYPE.FUNCTION);
   }
 
   public resolve(statements: AST.Stmt[]) {

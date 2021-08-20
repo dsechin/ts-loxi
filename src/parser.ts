@@ -33,6 +33,14 @@ export class Parser {
     return this.tokens[this.current];
   }
 
+  private next(): Token {
+    if (this.current >= this.tokens.length - 1) {
+      return this.boundaryGuard;
+    }
+
+    return this.tokens[this.current + 1];
+  }
+
   private previous(): Token {
     return this.current > 0
       ? this.tokens[this.current - 1]
@@ -82,8 +90,13 @@ export class Parser {
    */
   private declaration(): AST.Stmt {
     try {
-      if (this.match(TokenType.FUN)) {
-        return this.functionDeclaration('function');
+      if (
+        this.peek().type === TokenType.FUN
+        && this.next().type === TokenType.IDENTIFIER
+      ) {
+        this.advance();
+
+        return this.functionDeclartaion('function');
       }
 
       if (this.match(TokenType.VAR)) {
@@ -99,7 +112,7 @@ export class Parser {
   /**
    * funDecl → "fun" IDENTIFIER "(" parameters? ")" block ;
    */
-  private functionDeclaration(kind: string): AST.FunctionStmt {
+  private functionDeclartaion(kind: string): AST.FunctionStmt {
     const name = this.consume(TokenType.IDENTIFIER, `Expect ${kind} name`);
 
     this.consume(TokenType.LEFT_PAREN, 'Expect "(" after a function declaration.');
@@ -599,6 +612,30 @@ export class Parser {
   }
 
   /**
+   * lambda → "fun" IDENTIFIER? "(" parameters? ")" block ;
+   */
+   private lambda(kind: string): AST.LambdaExpr {
+    let name = null;
+
+    if (this.match(TokenType.IDENTIFIER)) {
+      name = this.previous();
+    }
+
+    this.consume(TokenType.LEFT_PAREN, 'Expect "(" after a lambda declaration.');
+
+    const params = this.check(TokenType.RIGHT_PAREN)
+      ? []
+      : this.parameters();
+
+    this.consume(TokenType.RIGHT_PAREN, 'Expect ")" after a lambda parameters list.');
+    this.consume(TokenType.LEFT_BRACE, `Expect "{" before ${kind} body.`);
+
+    const body = this.blockContents();
+
+    return new AST.LambdaExpr(name, params, body);
+  }
+
+  /**
    * primary → NUMBER | STRING | "true" | "false" | "nil"
    *         | "(" expression ")"
    *         | IDENTIFIER ;
@@ -630,6 +667,10 @@ export class Parser {
       this.consume(TokenType.RIGHT_PAREN, 'Expect \')\' after expression.');
 
       return new AST.GroupingExpr(expr);
+    }
+
+    if (this.match(TokenType.FUN)) {
+      return this.lambda('function');
     }
 
     throw this.error(this.peek(), 'Expect expression.');

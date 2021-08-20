@@ -13,6 +13,7 @@ const exprSubclasses = generateAstClasses(
     'Logical  -> left : Expr, operator : Token, right : Expr',
     'Unary    -> operator : Token, right : Expr',
     'Variable -> name : Token',
+    'Lambda   -> name : Token | null, params : Token[], body : Stmt[]',
     'NoOp     -> ',
   ],
   'Expr',

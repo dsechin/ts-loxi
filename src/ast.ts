@@ -15,6 +15,7 @@ export interface ExprVisitor<T> {
   visitLogicalExpr(expr: LogicalExpr): T;
   visitUnaryExpr(expr: UnaryExpr): T;
   visitVariableExpr(expr: VariableExpr): T;
+  visitLambdaExpr(expr: LambdaExpr): T;
   visitNoOpExpr(expr: NoOpExpr): T;
 }
 
@@ -133,6 +134,20 @@ export class VariableExpr extends Expr {
 
   accept<T>(visitor: ExprVisitor<T>): T {
     return visitor.visitVariableExpr(this);
+  }
+}
+
+export class LambdaExpr extends Expr {
+  constructor(
+    public name: Token | null,
+    public params: Token[],
+    public body: Stmt[],
+  ) {
+    super();
+  }
+
+  accept<T>(visitor: ExprVisitor<T>): T {
+    return visitor.visitLambdaExpr(this);
   }
 }
 

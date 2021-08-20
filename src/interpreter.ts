@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import * as AST from './ast';
-import {ICallable, TFunction} from './callable';
+import {ICallable, TFunction, TLambda} from './callable';
 import {Environment} from './environment';
 import {reportRuntimeError, RuntimeError, Break, Return} from './error';
 import {Clock} from './native-functions';
@@ -344,6 +344,7 @@ export class Interpreter implements
 
   public visitCallExpr(expr: AST.CallExpr): unknown {
     const callee = this.evaluate(expr.callee);
+
     const args = expr.args.map(arg => {
       return this.evaluate(arg);
     });
@@ -413,5 +414,15 @@ export class Interpreter implements
 
   public visitVariableExpr(expr: AST.VariableExpr): unknown {
     return this.lookUpVariable(expr.name, expr);
+  }
+
+  public visitLambdaExpr(expr: AST.LambdaExpr): unknown {
+    const func = new TLambda(expr, this.environment);
+
+    if (!_.isNull(expr.name)) {
+      this.environment.define(expr.name.lexeme, func);
+    }
+
+    return func;
   }
 }
