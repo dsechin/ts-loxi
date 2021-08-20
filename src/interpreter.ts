@@ -13,16 +13,23 @@ export class Interpreter implements
   private environment: Environment;
 
   public readonly globals: Environment;
+  public locals: Map<AST.Expr, number>;
 
   constructor() {
     this.globals = new Environment();
     this.environment = this.globals;
+
+    this.locals = new Map<AST.Expr, number>();
 
     this.globals.define('clock', new Clock());
   }
 
   private execute(stmt: AST.Stmt): void {
     stmt.accept(this);
+  }
+
+  public resolve(expr: AST.Expr, distance: number): void {
+    this.locals.set(expr, distance);
   }
 
   public executeBlock(statements: AST.Stmt[], environment: Environment): void {
@@ -98,6 +105,16 @@ export class Interpreter implements
     return String(value);
   }
 
+  private lookUpVariable(name: Token, expr: AST.Expr) {
+    const distance = this.locals.get(expr);
+
+    if (_.isUndefined(distance)) {
+      return this.globals.get(name);
+    }
+
+    return this.environment.getAt(distance, name);
+  }
+
   public interpret(statements: AST.Stmt[]): void{
     try {
       statements.forEach(statement => {
@@ -149,6 +166,7 @@ export class Interpreter implements
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public visitBreakStmt(stmt: AST.BreakStmt): void {
     throw new Break();
   }
@@ -167,10 +185,16 @@ export class Interpreter implements
     }
   }
 
-  public visitAssignExpr(stmt: AST.AssignExpr): unknown {
-    const value = this.evaluate(stmt.value);
+  public visitAssignExpr(expr: AST.AssignExpr): unknown {
+    const value = this.evaluate(expr.value);
 
-    this.environment.assign(stmt.name, value);
+    const distance = this.locals.get(expr);
+
+    if (_.isUndefined(distance)) {
+      this.globals.assign(expr.name, value);
+    } else {
+      this.environment.assignAt(distance, expr.name, value);
+    }
 
     return value;
   }
@@ -378,6 +402,7 @@ export class Interpreter implements
     return expr.value;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public visitNoOpExpr(expr: AST.NoOpExpr): unknown {
     return null;
   }
@@ -387,6 +412,6 @@ export class Interpreter implements
   }
 
   public visitVariableExpr(expr: AST.VariableExpr): unknown {
-    return this.environment.get(expr.name);
+    return this.lookUpVariable(expr.name, expr);
   }
 }

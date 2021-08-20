@@ -20,6 +20,17 @@ export class Environment {
     return Object.keys(this.values).includes(name);
   }
 
+  private getAncestor(distance: number) {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    let environment = this as Environment;
+
+    for (let i = 0; i < distance; i++) {
+      environment = environment.enclosing as Environment;
+    }
+
+    return environment;
+  }
+
   public define(name: string, value: unknown): void {
     this.values[name] = value;
   }
@@ -59,5 +70,13 @@ export class Environment {
     }
 
     this.throwUndefinedVariableError(name);
+  }
+
+  public getAt(distance: number, name: Token): unknown {
+    return this.getAncestor(distance).get(name);
+  }
+
+  public assignAt(distance: number, name: Token, value: unknown): void {
+    this.getAncestor(distance).assign(name, value);
   }
 }

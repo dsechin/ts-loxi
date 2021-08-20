@@ -28,8 +28,17 @@ export class Return extends RuntimeError {
   }
 }
 
+export const errCount = {
+  scanner: 0,
+  parser: 0,
+  resolver: 0,
+  runtime: 0,
+};
+
 export const reportScannerError = (line: number, message: string): void => {
   report(line, '', message);
+
+  errCount.scanner++;
 };
 
 export const reportParserError = (token: Token, message: string) => {
@@ -38,6 +47,14 @@ export const reportParserError = (token: Token, message: string) => {
   } else {
     report(token.line, ` at '${token.lexeme}'`, message);
   }
+
+  errCount.parser++;
+};
+
+export const reportResolverError = (token: Token, message: string) => {
+  report(token.line, ` at '${token.lexeme}'`, message);
+
+  errCount.resolver++;
 };
 
 export const reportRuntimeError = (error: RuntimeError) => {
@@ -46,6 +63,8 @@ export const reportRuntimeError = (error: RuntimeError) => {
   if (!_.isNull(token)) {
     report(token.line, ` at '${token.lexeme}'`, error.message);
   }
+
+  errCount.runtime++;
 };
 
 export const report = (

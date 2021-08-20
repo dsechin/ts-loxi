@@ -6,6 +6,8 @@ import * as _ from 'lodash';
 import {Scanner} from './scanner';
 import {Parser} from './parser';
 import {Interpreter} from './interpreter';
+import {Resolver} from './resolver';
+import {errCount} from './error';
 
 const argv = yargs(process.argv.slice(2))
   .usage('$0 [script]')
@@ -21,12 +23,22 @@ const run = (source: string): void => {
   const parser = new Parser(tokens);
   const statements = parser.parse();
 
-  // Stop if there was a syntax error.
-  if (statements.length === 0) {
+  if (errCount.scanner > 0 || errCount.parser > 0) {
+    console.warn('\n--- Scanner or parser error ---\n');
+
     return;
   }
 
   const interpreter = new Interpreter();
+  const resolver = new Resolver(interpreter);
+
+  resolver.resolve(statements);
+
+  if (errCount.resolver > 0) {
+    console.warn('\n--- Resolver error ---\n');
+
+    return;
+  }
 
   interpreter.interpret(statements);
 };
