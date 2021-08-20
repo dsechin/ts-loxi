@@ -272,9 +272,9 @@ export class Interpreter implements
 
       case TokenType.BANG_EQUAL:
         if (this.checkOperandsType(left, right, (val) => _.isNumber(val))) {
-          return this.isEqual(Number(left), Number(right));
+          return !this.isEqual(Number(left), Number(right));
         } else if (this.checkOperandsType(left, right, (val) => _.isString(val))) {
-          return this.isEqual(String(left), String(right));
+          return !this.isEqual(String(left), String(right));
         }
 
         throw new RuntimeError(

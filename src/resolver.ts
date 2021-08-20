@@ -44,7 +44,11 @@ export class Resolver implements
       .value();
 
     unusedVars.forEach(varName => {
-      console.warn(`"${varName}" variable is declared, but never used`);
+      const nestingLevel = this.scopes.length + 1;
+
+      console.warn(
+        `"${varName}" variable is declared, but never used [nesting level ${nestingLevel}]`,
+      );
     });
   }
 
@@ -279,7 +283,6 @@ export class Resolver implements
     if (expr.callee instanceof AST.VariableExpr) {
       this.markUsed(expr.callee.name);
     }
-
   }
 
   public visitGroupingExpr(expr: AST.GroupingExpr): void {
