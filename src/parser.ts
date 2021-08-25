@@ -90,13 +90,17 @@ export class Parser {
    */
   private declaration(): AST.Stmt {
     try {
+      if (this.match(TokenType.CLASS)) {
+        return this.classDeclaration();
+      }
+
       if (
         this.peek().type === TokenType.FUN
         && this.next().type === TokenType.IDENTIFIER
       ) {
         this.advance();
 
-        return this.functionDeclartaion('function');
+        return this.functionDeclaration('function');
       }
 
       if (this.match(TokenType.VAR)) {
@@ -110,9 +114,29 @@ export class Parser {
   }
 
   /**
+   * classDecl → "class" IDENTIFIER "{" function* "}" ;
+
+   */
+  private classDeclaration(): AST.ClassStmt {
+    const name = this.consume(TokenType.IDENTIFIER, 'Expect class name');
+
+    this.consume(TokenType.LEFT_BRACE, 'Expect "{" after a class name.');
+
+    const methods: AST.FunctionStmt[] = [];
+
+    while (!this.check(TokenType.RIGHT_BRACE) && !this.isAtEnd()) {
+      methods.push(this.functionDeclaration('method'));
+    }
+
+    this.consume(TokenType.RIGHT_BRACE, 'Expect "}" after a class declaration.');
+
+    return new AST.ClassStmt(name, methods);
+  }
+
+  /**
    * funDecl → "fun" IDENTIFIER "(" parameters? ")" block ;
    */
-  private functionDeclartaion(kind: string): AST.FunctionStmt {
+  private functionDeclaration(kind: string): AST.FunctionStmt {
     const name = this.consume(TokenType.IDENTIFIER, `Expect ${kind} name`);
 
     this.consume(TokenType.LEFT_PAREN, 'Expect "(" after a function declaration.');
@@ -373,6 +397,10 @@ export class Parser {
     return this.assigment();
   }
 
+  /**
+   * assignment → ( call "." )? IDENTIFIER "=" assignment
+   *            | conditional ;
+   */
   private assigment(): AST.Expr {
     const expr = this.conditional();
 
@@ -384,6 +412,8 @@ export class Parser {
         const name = expr.name;
 
         return new AST.AssignExpr(name, value);
+      } else if (expr instanceof AST.GetExpr) {
+        return new AST.SetExpr(expr.object, expr.name, value);
       }
 
       this.error(equals, 'Invalid assignment target');
@@ -562,7 +592,7 @@ export class Parser {
   }
 
   /**
-   * primary ( "(" arguments? ")" )* ;
+   * primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
    */
   private call(callee: AST.Expr): AST.Expr {
     let expr = callee;
@@ -571,6 +601,13 @@ export class Parser {
     while (true) {
       if (this.match(TokenType.LEFT_PAREN)) {
         expr = this.finishCall(expr);
+      } else if (this.match(TokenType.DOT)) {
+        const name: Token = this.consume(
+          TokenType.IDENTIFIER,
+          'Expect property name after \'.\'.',
+        );
+
+        expr = new AST.GetExpr(expr, name);
       } else {
         break;
       }
@@ -655,6 +692,10 @@ export class Parser {
 
     if (this.match(TokenType.NUMBER, TokenType.STRING)) {
       return new AST.LiteralExpr(this.previous().literal);
+    }
+
+    if (this.match(TokenType.THIS)) {
+      return new AST.ThisExpr(this.previous());
     }
 
     if (this.match(TokenType.IDENTIFIER)) {

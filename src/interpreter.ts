@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import * as AST from './ast';
-import {ICallable, TFunction, TLambda} from './callable';
+import {ICallable, TClass, TFunction, TInstance, TLambda, TMethodMap} from './callable';
 import {Environment} from './environment';
 import {reportRuntimeError, RuntimeError, Break, Return} from './error';
 import * as NativeFunctions from './native-functions';
@@ -126,8 +126,27 @@ export class Interpreter implements
     }
   }
 
+  public visitClassStmt(stmt: AST.ClassStmt): void {
+    this.environment.define(stmt.name.lexeme, null);
+
+    const _methods: TMethodMap = stmt.methods.reduce<TMethodMap>(
+      (acc, method) => {
+        const instance = new TFunction(method, this.environment);
+
+        acc.set(method.name.lexeme, instance);
+
+        return acc;
+      },
+      new Map<string, TFunction>(),
+    );
+
+    const _class = new TClass(stmt.name.lexeme, _methods);
+
+    this.environment.assign(stmt.name, _class);
+  }
+
   public visitFunctionStmt(stmt: AST.FunctionStmt): void {
-    const func = new TFunction(stmt);
+    const func = new TFunction(stmt, this.environment);
 
     this.environment.define(stmt.name.lexeme, func);
   }
@@ -341,6 +360,38 @@ export class Interpreter implements
 
     // Unreachable
     return null;
+  }
+
+  public visitGetExpr(expr: AST.GetExpr): unknown {
+    const obj = this.evaluate(expr.object);
+
+    if (obj instanceof TInstance) {
+      return obj.get(expr.name);
+    }
+
+    throw new RuntimeError(
+      expr.name,
+      'Only instances can have properties',
+    );
+  }
+
+  public visitSetExpr(expr: AST.SetExpr): void {
+    const obj = this.evaluate(expr.object);
+
+    if (!(obj instanceof TInstance)) {
+      throw new RuntimeError(
+        expr.name,
+        'Only instances can fields',
+      );
+    }
+
+    const value = this.evaluate(expr.value);
+
+    obj.set(expr.name, value);
+  }
+
+  public visitThisExpr(expr: AST.ThisExpr): void {
+    this.lookUpVariable(expr.keyword, expr);
   }
 
   public visitCallExpr(expr: AST.CallExpr): unknown {

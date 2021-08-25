@@ -10,9 +10,12 @@ export interface ExprVisitor<T> {
   visitTernaryExpr(expr: TernaryExpr): T;
   visitBinaryExpr(expr: BinaryExpr): T;
   visitCallExpr(expr: CallExpr): T;
+  visitGetExpr(expr: GetExpr): T;
   visitGroupingExpr(expr: GroupingExpr): T;
   visitLiteralExpr(expr: LiteralExpr): T;
   visitLogicalExpr(expr: LogicalExpr): T;
+  visitSetExpr(expr: SetExpr): T;
+  visitThisExpr(expr: ThisExpr): T;
   visitUnaryExpr(expr: UnaryExpr): T;
   visitVariableExpr(expr: VariableExpr): T;
   visitLambdaExpr(expr: LambdaExpr): T;
@@ -74,6 +77,19 @@ export class CallExpr extends Expr {
   }
 }
 
+export class GetExpr extends Expr {
+  constructor(
+    public object: Expr,
+    public name: Token,
+  ) {
+    super();
+  }
+
+  accept<T>(visitor: ExprVisitor<T>): T {
+    return visitor.visitGetExpr(this);
+  }
+}
+
 export class GroupingExpr extends Expr {
   constructor(
     public expression: Expr,
@@ -109,6 +125,32 @@ export class LogicalExpr extends Expr {
 
   accept<T>(visitor: ExprVisitor<T>): T {
     return visitor.visitLogicalExpr(this);
+  }
+}
+
+export class SetExpr extends Expr {
+  constructor(
+    public object: Expr,
+    public name: Token,
+    public value: Expr,
+  ) {
+    super();
+  }
+
+  accept<T>(visitor: ExprVisitor<T>): T {
+    return visitor.visitSetExpr(this);
+  }
+}
+
+export class ThisExpr extends Expr {
+  constructor(
+    public keyword: Token,
+  ) {
+    super();
+  }
+
+  accept<T>(visitor: ExprVisitor<T>): T {
+    return visitor.visitThisExpr(this);
   }
 }
 
@@ -169,6 +211,7 @@ export abstract class Stmt {
 
 export interface StmtVisitor<T> {
   visitBlockStmt(expr: BlockStmt): T;
+  visitClassStmt(expr: ClassStmt): T;
   visitExpressionStmt(expr: ExpressionStmt): T;
   visitFunctionStmt(expr: FunctionStmt): T;
   visitIfStmt(expr: IfStmt): T;
@@ -188,6 +231,19 @@ export class BlockStmt extends Stmt {
 
   accept<T>(visitor: StmtVisitor<T>): T {
     return visitor.visitBlockStmt(this);
+  }
+}
+
+export class ClassStmt extends Stmt {
+  constructor(
+    public name: Token,
+    public methods: FunctionStmt[],
+  ) {
+    super();
+  }
+
+  accept<T>(visitor: StmtVisitor<T>): T {
+    return visitor.visitClassStmt(this);
   }
 }
 

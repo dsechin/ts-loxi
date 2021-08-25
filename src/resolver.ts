@@ -7,6 +7,12 @@ import {Token} from './token';
 export enum FUNCTION_TYPE {
   NONE = 'none',
   FUNCTION = 'function',
+  METHOD = 'method',
+}
+
+export enum CLASS_TYPE {
+  NONE = 'none',
+  CLASS = 'class',
 }
 
 export enum VAR_STATE {
@@ -22,6 +28,7 @@ export class Resolver implements
 
   private scopes: Array<Scope> = [];
   private currentFunction: FUNCTION_TYPE = FUNCTION_TYPE.NONE;
+  private currentClass: CLASS_TYPE = CLASS_TYPE.NONE;
 
   constructor(
     public interpreter: Interpreter,
@@ -193,6 +200,32 @@ export class Resolver implements
     this.define(stmt.name);
   }
 
+  public visitClassStmt(stmt: AST.ClassStmt): void {
+    const enclosingClass = this.currentClass;
+
+    this.currentClass = CLASS_TYPE.CLASS;
+
+    this.declare(stmt.name);
+    this.define(stmt.name);
+
+    // To bind 'this' to class methods
+    this.beginScope();
+
+    const scope = this.peekScope();
+
+    scope['this'] = VAR_STATE.DEFINED;
+
+    stmt.methods.forEach(method => {
+      const declaration = FUNCTION_TYPE.METHOD;
+
+      this.resolveFunction(method, declaration);
+    });
+
+    this.endScope();
+
+    this.currentClass = enclosingClass;
+  }
+
   public visitFunctionStmt(stmt: AST.FunctionStmt): void {
     this.declare(stmt.name);
     this.define(stmt.name);
@@ -289,6 +322,15 @@ export class Resolver implements
     this.resolveExpr(expr.expression);
   }
 
+  public visitGetExpr(expr: AST.GetExpr): void {
+    this.resolveExpr(expr.object);
+  }
+
+  public visitSetExpr(expr: AST.SetExpr): void {
+    this.resolveExpr(expr.value);
+    this.resolveExpr(expr.object);
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public visitLiteralExpr(expr: AST.LiteralExpr): void {
 
@@ -301,6 +343,19 @@ export class Resolver implements
 
   public visitUnaryExpr(expr: AST.UnaryExpr): void {
     this.resolveExpr(expr.right);
+  }
+
+  public visitThisExpr(expr: AST.ThisExpr): void {
+    if (this.currentClass === CLASS_TYPE.NONE) {
+      reportResolverError(
+        expr.keyword,
+        'Can\'t use "this" outside of a class.',
+      );
+
+      return;
+    }
+
+    this.resolveLocal(expr, expr.keyword);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
