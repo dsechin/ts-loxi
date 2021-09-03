@@ -415,7 +415,7 @@ export class Interpreter implements
     if (args.length !== func.arity()) {
       throw new RuntimeError(
         expr.paren,
-        `Expected ${func.arity.length} arguments, but got ${args.length}.`,
+        `Expected ${func.arity()} arguments, but got ${args.length}.`,
       );
     }
 
