@@ -8,6 +8,8 @@ export enum FUNCTION_TYPE {
   NONE = 'none',
   FUNCTION = 'function',
   METHOD = 'method',
+  // class constructor; allow early return, disallow returning a value
+  INITIALIZER = 'initializer',
 }
 
 export enum CLASS_TYPE {
@@ -216,7 +218,9 @@ export class Resolver implements
     scope['this'] = VAR_STATE.DEFINED;
 
     stmt.methods.forEach(method => {
-      const declaration = FUNCTION_TYPE.METHOD;
+      const declaration = method.name.lexeme === 'init'
+        ? FUNCTION_TYPE.INITIALIZER
+        : FUNCTION_TYPE.METHOD;
 
       this.resolveFunction(method, declaration);
     });
@@ -259,6 +263,13 @@ export class Resolver implements
     }
 
     if (!_.isNull(stmt.value)) {
+      if (this.currentFunction === FUNCTION_TYPE.INITIALIZER) {
+        reportResolverError(
+          stmt.keyword,
+          'Can\'t return value from an instance initializer.',
+        );
+      }
+
       this.resolveExpr(stmt.value);
     }
   }

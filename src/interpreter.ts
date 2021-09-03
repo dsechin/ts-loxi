@@ -131,7 +131,11 @@ export class Interpreter implements
 
     const _methods: TMethodMap = stmt.methods.reduce<TMethodMap>(
       (acc, method) => {
-        const instance = new TFunction(method, this.environment);
+        const instance = new TFunction(
+          method,
+          this.environment,
+          method.name.lexeme === 'init',
+        );
 
         acc.set(method.name.lexeme, instance);
 
@@ -146,7 +150,7 @@ export class Interpreter implements
   }
 
   public visitFunctionStmt(stmt: AST.FunctionStmt): void {
-    const func = new TFunction(stmt, this.environment);
+    const func = new TFunction(stmt, this.environment, false);
 
     this.environment.define(stmt.name.lexeme, func);
   }

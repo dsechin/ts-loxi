@@ -76,6 +76,10 @@ export class Environment {
     return this.getAncestor(distance).get(name);
   }
 
+  public getThis(): unknown {
+    return this.values['this'];
+  }
+
   public assignAt(distance: number, name: Token, value: unknown): void {
     this.getAncestor(distance).assign(name, value);
   }

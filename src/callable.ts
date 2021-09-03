@@ -14,6 +14,7 @@ export class TFunction implements ICallable {
   constructor(
     private declaration: AST.FunctionStmt,
     private closure: Environment,
+    private isInitialized: boolean,
   ) {
 
   }
@@ -33,10 +34,19 @@ export class TFunction implements ICallable {
       interpreter.executeBlock(this.declaration.body, environment);
     } catch (err) {
       if (err instanceof Return) {
+        if (this.isInitialized) {
+          return this.closure.getThis();
+        }
+
         return err.value;
       } else {
         throw err; // rethrow
       }
+    }
+
+    // explicit call to an instance 'init' method always returns the same instance
+    if (this.isInitialized) {
+      return this.closure.getThis();
     }
 
     return null;
@@ -47,7 +57,7 @@ export class TFunction implements ICallable {
 
     env.define('this', self);
 
-    return new TFunction(this.declaration, env);
+    return new TFunction(this.declaration, env, this.isInitialized);
   }
 
   public arity(): number {
@@ -115,6 +125,11 @@ export class TClass implements ICallable {
 
   public call(interpreter: Interpreter, args: unknown[]): unknown {
     const instance = new TInstance(this);
+    const initializer = this.findMethod('init'); // constructor (if defined)
+
+    if (!_.isNull(initializer)) {
+      initializer.bind(instance).call(interpreter, args);
+    }
 
     return instance;
   }
@@ -124,7 +139,11 @@ export class TClass implements ICallable {
   }
 
   public arity(): number {
-    return 0;
+    const initializer = this.findMethod('init');
+
+    return _.isNull(initializer)
+      ? 0
+      : initializer.arity();
   }
 
   public toString(): string {
