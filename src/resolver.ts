@@ -48,6 +48,7 @@ export class Resolver implements
 
     const unusedVars = _
       .chain(scope)
+      .pickBy((value, name) => name !== 'this')
       .pickBy(value => value !== VAR_STATE.USED)
       .keys()
       .value();
