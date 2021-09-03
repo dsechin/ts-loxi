@@ -10,7 +10,7 @@ export class Clock implements ICallable {
         return new Date().getTime() / 1000.0;
     }
 
-    public toString() {
+    public toString(): string {
         return '<native function>';
     }
 }
@@ -24,7 +24,7 @@ export class Str implements ICallable {
         return String(args[0]);
     }
 
-    public toString() {
+    public toString(): string {
         return '<native function>';
     }
 }

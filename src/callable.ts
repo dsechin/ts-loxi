@@ -42,7 +42,7 @@ export class TFunction implements ICallable {
     return null;
   }
 
-  public bind(self: TInstance) {
+  public bind(self: TInstance): TFunction {
     const env = new Environment(this.closure);
 
     env.define('this', self);
@@ -119,7 +119,7 @@ export class TClass implements ICallable {
     return instance;
   }
 
-  public findMethod(name: string) {
+  public findMethod(name: string): TFunction | null {
     return this.methods.get(name) || null;
   }
 

@@ -106,7 +106,7 @@ export class Interpreter implements
     return String(value);
   }
 
-  private lookUpVariable(name: Token, expr: AST.Expr) {
+  private lookUpVariable(name: Token, expr: AST.Expr): unknown {
     const distance = this.locals.get(expr);
 
     if (_.isUndefined(distance)) {
@@ -116,7 +116,7 @@ export class Interpreter implements
     return this.environment.getAt(distance, name);
   }
 
-  public interpret(statements: AST.Stmt[]): void{
+  public interpret(statements: AST.Stmt[]): void {
     try {
       statements.forEach(statement => {
         this.execute(statement);

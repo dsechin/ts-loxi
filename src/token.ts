@@ -59,7 +59,7 @@ export class Token {
     public readonly line: number,
   ) {}
 
-  public toString() {
+  public toString(): string {
     return `${this.type} ${this.lexeme} ${this.literal}`;
   }
 }

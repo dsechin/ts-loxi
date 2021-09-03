@@ -20,7 +20,7 @@ export class Environment {
     return Object.keys(this.values).includes(name);
   }
 
-  private getAncestor(distance: number) {
+  private getAncestor(distance: number): Environment {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     let environment = this as Environment;
 

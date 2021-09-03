@@ -137,7 +137,7 @@ export class Scanner {
     );
   }
 
-  private matchIdentifier() {
+  private matchIdentifier(): void {
     const predicate = this.combineOr(
       (char) => this.isDigit(char),
       (char) => this.isAlpha(char),
@@ -148,17 +148,17 @@ export class Scanner {
     const text = this.source.slice(this.start, this.current);
     const type = this.keywords[text] || TokenType.IDENTIFIER;
 
-    return this.addToken(type, text);
+    this.addToken(type, text);
   }
 
-  private addToken(type: TokenType, literal: unknown) {
+  private addToken(type: TokenType, literal: unknown): void {
     const text = this.source.slice(this.start, this.current);
     const token = new Token(type, text, literal, this.line);
 
     this.tokens.push(token);
   }
 
-  private addTokenByType(type: TokenType) {
+  private addTokenByType(type: TokenType): void {
     this.addToken(type, null);
   }
 
@@ -272,7 +272,7 @@ export class Scanner {
     }
   }
 
-  public scanTokens() {
+  public scanTokens(): Token[] {
     while (!this.isAtEnd()) {
       this.start = this.current;
       this.scanToken();

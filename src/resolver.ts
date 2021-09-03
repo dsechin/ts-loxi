@@ -372,7 +372,7 @@ export class Resolver implements
     this.resolveLambda(expr, FUNCTION_TYPE.FUNCTION);
   }
 
-  public resolve(statements: AST.Stmt[]) {
+  public resolve(statements: AST.Stmt[]): void {
     this.resolveStmtList(statements);
   }
 }

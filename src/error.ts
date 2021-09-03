@@ -41,7 +41,7 @@ export const reportScannerError = (line: number, message: string): void => {
   errCount.scanner++;
 };
 
-export const reportParserError = (token: Token, message: string) => {
+export const reportParserError = (token: Token, message: string): void => {
   if (token.type === TokenType.EOF) {
     report(token.line, ' at end', message);
   } else {
@@ -51,13 +51,13 @@ export const reportParserError = (token: Token, message: string) => {
   errCount.parser++;
 };
 
-export const reportResolverError = (token: Token, message: string) => {
+export const reportResolverError = (token: Token, message: string): void => {
   report(token.line, ` at '${token.lexeme}'`, message);
 
   errCount.resolver++;
 };
 
-export const reportRuntimeError = (error: RuntimeError) => {
+export const reportRuntimeError = (error: RuntimeError): void => {
   const {token} = error;
 
   if (!_.isNull(token)) {
