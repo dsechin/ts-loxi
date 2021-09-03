@@ -33,6 +33,7 @@ export enum TokenType {
   // Keywords.
   AND = 'AND',
   CLASS = 'CLASS',
+  STATIC = 'STATIC',
   ELSE = 'ELSE',
   FALSE = 'FALSE',
   FUN = 'FUN',

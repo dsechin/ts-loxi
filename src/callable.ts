@@ -20,7 +20,7 @@ export class TFunction implements ICallable {
   }
 
   public call(interpreter: Interpreter, args: unknown[]): unknown {
-    const environment = new Environment(interpreter.globals);
+    const environment = new Environment(this.closure);
     const {params} = this.declaration;
 
     for (let i = 0; i < params.length; i++) {
@@ -65,7 +65,7 @@ export class TFunction implements ICallable {
   }
 
   public toString(): string {
-    return `<fn ${this.declaration.name.lexeme} >`;
+    return `<fn "${this.declaration.name.lexeme}">`;
   }
 }
 
@@ -107,7 +107,7 @@ export class TLambda implements ICallable {
 
   public toString(): string {
     if (!_.isNull(this.declaration.name)) {
-      return `<lambda ${this.declaration.name.lexeme}>`;
+      return `<lambda "${this.declaration.name.lexeme}">`;
     } else {
       return '<lambda>';
     }
@@ -115,39 +115,28 @@ export class TLambda implements ICallable {
 }
 
 export type TMethodMap = Map<string, TFunction>;
-export class TClass implements ICallable {
+export class TClassBase {
   constructor(
     public readonly name: string,
     public readonly methods: TMethodMap,
   ) {
-
-  }
-
-  public call(interpreter: Interpreter, args: unknown[]): unknown {
-    const instance = new TInstance(this);
-    const initializer = this.findMethod('init'); // constructor (if defined)
-
-    if (!_.isNull(initializer)) {
-      initializer.bind(instance).call(interpreter, args);
-    }
-
-    return instance;
   }
 
   public findMethod(name: string): TFunction | null {
     return this.methods.get(name) || null;
   }
+}
 
-  public arity(): number {
-    const initializer = this.findMethod('init');
+export class TMetaClass extends TClassBase {
+  public readonly name: string;
 
-    return _.isNull(initializer)
-      ? 0
-      : initializer.arity();
-  }
+  constructor(
+    public readonly nameToken: Token,
+    public readonly methods: TMethodMap,
+  ) {
+    super(nameToken.lexeme, methods);
 
-  public toString(): string {
-    return `<class ${this.name} >`;
+    this.name = nameToken.lexeme;
   }
 }
 
@@ -155,7 +144,7 @@ export class TInstance {
   private fields: Record<string, unknown> = {};
 
   constructor(
-    private _class: TClass,
+    private _class: TClassBase,
   ) {
 
   }
@@ -182,6 +171,47 @@ export class TInstance {
   }
 
   public toString(): string {
-    return `<instance ${this._class.name}>`;
+    return `<instance "${this._class.name}">`;
+  }
+}
+
+export class TClass extends TInstance implements ICallable {
+  public readonly name: string;
+
+  constructor(
+    private readonly nameToken: Token,
+    private readonly metaclass: TMetaClass,
+    public readonly methods: TMethodMap,
+  ) {
+    super(metaclass);
+
+    this.name = nameToken.lexeme;
+  }
+
+  public call(interpreter: Interpreter, args: unknown[]): unknown {
+    const instance = new TInstance(this);
+    const initializer = this.findMethod('init'); // constructor (if defined)
+
+    if (!_.isNull(initializer)) {
+      initializer.bind(instance).call(interpreter, args);
+    }
+
+    return instance;
+  }
+
+  public findMethod(name: string): TFunction | null {
+    return this.methods.get(name) || null;
+  }
+
+  public arity(): number {
+    const initializer = this.findMethod('init');
+
+    return _.isNull(initializer)
+      ? 0
+      : initializer.arity();
+  }
+
+  public toString(): string {
+    return `<class "${this.name}">`;
   }
 }

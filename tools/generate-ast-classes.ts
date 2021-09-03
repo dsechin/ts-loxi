@@ -27,7 +27,7 @@ const stmtSubclasses = generateAstClasses(
     'Block      -> statements : Stmt[]',
     'Class      -> name : Token, methods : FunctionStmt[]',
     'Expression -> expression : Expr',
-    'Function   -> name : Token, params : Token[], body : Stmt[]',
+    'Function   -> name : Token, params : Token[], body : Stmt[], isStatic : boolean',
     'If         -> condition : Expr, thenBranch : Stmt, elseBranch : Stmt | null',
     'While      -> condition : Expr, body : Stmt',
     'Break      -> ',

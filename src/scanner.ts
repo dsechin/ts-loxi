@@ -11,6 +11,7 @@ export class Scanner {
   private readonly keywords: Record<string, TokenType> = {
     'and': TokenType.AND,
     'class': TokenType.CLASS,
+    'static': TokenType.STATIC,
     'else': TokenType.ELSE,
     'false': TokenType.FALSE,
     'for': TokenType.FOR,

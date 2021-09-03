@@ -83,4 +83,13 @@ export class Environment {
   public assignAt(distance: number, name: Token, value: unknown): void {
     this.getAncestor(distance).assign(name, value);
   }
+
+  public copyWithoutThis(): Environment {
+    const _values = _.omit(this.values, ['this']);
+    const env = new Environment(this.enclosing);
+
+    env.values = _values;
+
+    return env;
+  }
 }

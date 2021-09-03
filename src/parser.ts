@@ -137,6 +137,12 @@ export class Parser {
    * funDecl → "fun" IDENTIFIER "(" parameters? ")" block ;
    */
   private functionDeclaration(kind: string): AST.FunctionStmt {
+    const isStatic = this.check(TokenType.STATIC);
+
+    if (isStatic) {
+      this.consume(TokenType.STATIC, 'Expect "static" keyword');
+    }
+
     const name = this.consume(TokenType.IDENTIFIER, `Expect ${kind} name`);
 
     this.consume(TokenType.LEFT_PAREN, 'Expect "(" after a function declaration.');
@@ -150,7 +156,7 @@ export class Parser {
 
     const body = this.blockContents();
 
-    return new AST.FunctionStmt(name, params, body);
+    return new AST.FunctionStmt(name, params, body, isStatic);
   }
 
   /**

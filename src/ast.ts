@@ -264,6 +264,7 @@ export class FunctionStmt extends Stmt {
     public name: Token,
     public params: Token[],
     public body: Stmt[],
+    public isStatic: boolean,
   ) {
     super();
   }

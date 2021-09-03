@@ -8,6 +8,7 @@ export enum FUNCTION_TYPE {
   NONE = 'none',
   FUNCTION = 'function',
   METHOD = 'method',
+  STATIC_METHOD = 'static_method',
   // class constructor; allow early return, disallow returning a value
   INITIALIZER = 'initializer',
 }
@@ -211,14 +212,20 @@ export class Resolver implements
     this.declare(stmt.name);
     this.define(stmt.name);
 
-    // To bind 'this' to class methods
+    const [staticMethods, instanceMethods] = _.partition(stmt.methods, method => method.isStatic);
+
+    staticMethods.forEach(method => {
+      this.resolveFunction(method, FUNCTION_TYPE.STATIC_METHOD);
+    });
+
+    // To bind 'this' to instance methods
     this.beginScope();
 
     const scope = this.peekScope();
 
     scope['this'] = VAR_STATE.DEFINED;
 
-    stmt.methods.forEach(method => {
+    instanceMethods.forEach(method => {
       const declaration = method.name.lexeme === 'init'
         ? FUNCTION_TYPE.INITIALIZER
         : FUNCTION_TYPE.METHOD;

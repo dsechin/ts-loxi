@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import * as AST from './ast';
-import {ICallable, TClass, TFunction, TInstance, TLambda, TMethodMap} from './callable';
+import {ICallable, TClass, TFunction, TInstance, TLambda, TMetaClass, TMethodMap} from './callable';
 import {Environment} from './environment';
 import {reportRuntimeError, RuntimeError, Break, Return} from './error';
 import * as NativeFunctions from './native-functions';
@@ -129,7 +129,24 @@ export class Interpreter implements
   public visitClassStmt(stmt: AST.ClassStmt): void {
     this.environment.define(stmt.name.lexeme, null);
 
-    const _methods: TMethodMap = stmt.methods.reduce<TMethodMap>(
+    const [staticMethodsList, instanceMethodsList] = _.partition(stmt.methods, method => method.isStatic);
+
+    const staticMethods: TMethodMap = staticMethodsList.reduce<TMethodMap>(
+      (acc, method) => {
+        const instance = new TFunction(
+          method,
+          this.environment,
+          false,
+        );
+
+        acc.set(method.name.lexeme, instance);
+
+        return acc;
+      },
+      new Map<string, TFunction>(),
+    );
+
+    const instanceMethods: TMethodMap = instanceMethodsList.reduce<TMethodMap>(
       (acc, method) => {
         const instance = new TFunction(
           method,
@@ -144,13 +161,18 @@ export class Interpreter implements
       new Map<string, TFunction>(),
     );
 
-    const _class = new TClass(stmt.name.lexeme, _methods);
+    const metaclass = new TMetaClass(stmt.name, staticMethods);
+    const _class = new TClass(stmt.name, metaclass, instanceMethods);
 
     this.environment.assign(stmt.name, _class);
   }
 
   public visitFunctionStmt(stmt: AST.FunctionStmt): void {
-    const func = new TFunction(stmt, this.environment, false);
+    const env = !stmt.isStatic || stmt.name.lexeme === 'init'
+      ? this.environment
+      : this.environment.copyWithoutThis();
+
+    const func = new TFunction(stmt, env, false);
 
     this.environment.define(stmt.name.lexeme, func);
   }
@@ -394,8 +416,8 @@ export class Interpreter implements
     obj.set(expr.name, value);
   }
 
-  public visitThisExpr(expr: AST.ThisExpr): void {
-    this.lookUpVariable(expr.keyword, expr);
+  public visitThisExpr(expr: AST.ThisExpr): unknown {
+    return this.lookUpVariable(expr.keyword, expr);
   }
 
   public visitCallExpr(expr: AST.CallExpr): unknown {
